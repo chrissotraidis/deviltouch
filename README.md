@@ -3,9 +3,13 @@
 Feasibility study for a proposed iPadOS-first Diablo I experience built on top of
 [DevilutionX](https://github.com/diasurgical/devilutionX).
 
-**Start here: [FEASIBILITY.md](FEASIBILITY.md)** — a deep technical, product, and legal
-feasibility study (2026-07-17) answering the central question: *does a meaningful
-DiabloTouch project exist, or would it merely duplicate DevilutionX's existing iOS support?*
+Documents:
+
+- **[FEASIBILITY.md](FEASIBILITY.md)** — deep technical, product, and legal feasibility
+  study (2026-07-17) answering the central question: *does a meaningful project exist here,
+  or would it merely duplicate DevilutionX's existing iOS support?*
+- **[PRD.md](PRD.md)** — goal-based product requirements document for **DevilTouch**, the
+  proposed project name (trademark-safe, following the Devilution naming convention).
 
 Summary of the study's conclusions:
 
