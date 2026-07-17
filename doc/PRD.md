@@ -2,7 +2,7 @@
 
 **Version:** 1.0 (2026-07-17)
 **Status:** Draft
-**Predecessor document:** [FEASIBILITY.md](FEASIBILITY.md) — all product decisions here derive from that study's verified findings.
+**Predecessor document:** [FEASIBILITY.md](../FEASIBILITY.md) — all product decisions here derive from that study's verified findings.
 
 ---
 
