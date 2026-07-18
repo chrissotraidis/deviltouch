@@ -1,0 +1,174 @@
+diff --git a/Source/cursor.cpp b/Source/cursor.cpp
+index c5af4f927..470df2457 100644
+--- a/Source/cursor.cpp
++++ b/Source/cursor.cpp
+@@ -5,7 +5,9 @@
+  */
+ #include "cursor.h"
+ 
++#include <algorithm>
+ #include <cstdint>
++#include <vector>
+ 
+ #include <fmt/format.h>
+ 
+@@ -115,6 +117,45 @@ const uint16_t InvItemHeight2[InvItems2Size] = {
+ OptionalOwnedClxSpriteList *HalfSizeItemSprites;
+ OptionalOwnedClxSpriteList *HalfSizeItemSpritesRed;
+ 
++#ifdef __IPHONEOS__
++struct RenderedItemTarget {
++	int8_t itemId;
++	Rectangle bounds;
++};
++
++std::vector<RenderedItemTarget> RenderedItemTargets;
++
++int8_t FindRenderedItemTarget(Point position, bool useTouchTarget)
++{
++	constexpr int MinimumTouchTargetSize = 44;
++	int8_t bestItem = -1;
++	int bestDistanceSquared = 0;
++
++	for (const RenderedItemTarget &itemTarget : RenderedItemTargets) {
++		Rectangle bounds = itemTarget.bounds;
++		if (useTouchTarget) {
++			const int width = std::max(bounds.size.width, MinimumTouchTargetSize);
++			const int height = std::max(bounds.size.height, MinimumTouchTargetSize);
++			const Point center = bounds.Center();
++			bounds = { { center.x - width / 2, center.y - height / 2 }, { width, height } };
++		}
++		if (!bounds.contains(position))
++			continue;
++
++		const Point center = bounds.Center();
++		const int deltaX = position.x - center.x;
++		const int deltaY = position.y - center.y;
++		const int distanceSquared = deltaX * deltaX + deltaY * deltaY;
++		if (bestItem != -1 && distanceSquared >= bestDistanceSquared)
++			continue;
++		bestItem = itemTarget.itemId;
++		bestDistanceSquared = distanceSquared;
++	}
++
++	return bestItem;
++}
++#endif
++
+ } // namespace
+ 
+ /** Current highlighted monster */
+@@ -137,6 +178,18 @@ int pcurstemp;
+ /** Index of current cursor image */
+ int pcurs;
+ 
++#ifdef __IPHONEOS__
++void ClearRenderedItemTargets()
++{
++	RenderedItemTargets.clear();
++}
++
++void AddRenderedItemTarget(int8_t itemId, Rectangle bounds)
++{
++	RenderedItemTargets.push_back({ itemId, bounds });
++}
++#endif
++
+ void InitCursor()
+ {
+ 	assert(!pCursCels);
+@@ -345,7 +398,7 @@ void CheckRportal()
+ 	}
+ }
+ 
+-void CheckCursMove()
++void CheckCursMove(bool useTouchItemTargeting)
+ {
+ 	if (IsItemLabelHighlighted())
+ 		return;
+@@ -723,28 +776,33 @@ void CheckCursMove()
+ 		}
+ 	}
+ 	if (pcursplr == -1 && ObjectUnderCursor == nullptr && pcursmonst == -1) {
+-		if (!flipflag && mx + 1 < MAXDUNX && dItem[mx + 1][my] > 0) {
++#ifdef __IPHONEOS__
++		pcursitem = FindRenderedItemTarget(MousePosition, useTouchItemTargeting);
++		if (pcursitem != -1)
++			cursPosition = Items[pcursitem].position;
++#endif
++		if (pcursitem == -1 && !flipflag && mx + 1 < MAXDUNX && dItem[mx + 1][my] > 0) {
+ 			const uint8_t itemId = dItem[mx + 1][my] - 1;
+ 			if (Items[itemId]._iSelFlag >= 2) {
+ 				cursPosition = Point { mx, my } + Displacement { 1, 0 };
+ 				pcursitem = static_cast<int8_t>(itemId);
+ 			}
+ 		}
+-		if (flipflag && my + 1 < MAXDUNY && dItem[mx][my + 1] > 0) {
++		if (pcursitem == -1 && flipflag && my + 1 < MAXDUNY && dItem[mx][my + 1] > 0) {
+ 			const uint8_t itemId = dItem[mx][my + 1] - 1;
+ 			if (Items[itemId]._iSelFlag >= 2) {
+ 				cursPosition = Point { mx, my } + Displacement { 0, 1 };
+ 				pcursitem = static_cast<int8_t>(itemId);
+ 			}
+ 		}
+-		if (dItem[mx][my] > 0) {
++		if (pcursitem == -1 && dItem[mx][my] > 0) {
+ 			const uint8_t itemId = dItem[mx][my] - 1;
+ 			if (Items[itemId]._iSelFlag == 1 || Items[itemId]._iSelFlag == 3) {
+ 				cursPosition = { mx, my };
+ 				pcursitem = static_cast<int8_t>(itemId);
+ 			}
+ 		}
+-		if (mx + 1 < MAXDUNX && my + 1 < MAXDUNY && dItem[mx + 1][my + 1] > 0) {
++		if (pcursitem == -1 && mx + 1 < MAXDUNX && my + 1 < MAXDUNY && dItem[mx + 1][my + 1] > 0) {
+ 			const uint8_t itemId = dItem[mx + 1][my + 1] - 1;
+ 			if (Items[itemId]._iSelFlag >= 2) {
+ 				cursPosition = Point { mx, my } + Displacement { 1, 1 };
+diff --git a/Source/cursor.h b/Source/cursor.h
+index 2803230e8..820c36b82 100644
+--- a/Source/cursor.h
++++ b/Source/cursor.h
+@@ -58,7 +58,12 @@ void NewCursor(int cursId);
+ void InitLevelCursor();
+ void CheckRportal();
+ void CheckTown();
+-void CheckCursMove();
++void CheckCursMove(bool useTouchItemTargeting = false);
++
++#ifdef __IPHONEOS__
++void ClearRenderedItemTargets();
++void AddRenderedItemTarget(int8_t itemId, Rectangle bounds);
++#endif
+ 
+ void DrawSoftwareCursor(const Surface &out, Point position, int cursId);
+ 
+diff --git a/Source/engine/render/scrollrt.cpp b/Source/engine/render/scrollrt.cpp
+index 0770bd5e2..b3075d733 100644
+--- a/Source/engine/render/scrollrt.cpp
++++ b/Source/engine/render/scrollrt.cpp
+@@ -694,6 +694,15 @@ void DrawItem(const Surface &out, Point tilePosition, Point targetBufferPosition
+ 	const ClxSprite sprite = item.AnimInfo.currentSprite();
+ 	int px = targetBufferPosition.x - CalculateWidth2(sprite.width());
+ 	const Point position { px, targetBufferPosition.y };
++#ifdef __IPHONEOS__
++	if (item._iSelFlag != 0) {
++		const int zoomFactor = *sgOptions.Graphics.zoom ? 2 : 1;
++		AddRenderedItemTarget(static_cast<int8_t>(bItem - 1), {
++		    { position.x * zoomFactor, (position.y - sprite.height() + 1) * zoomFactor },
++		    { sprite.width() * zoomFactor, sprite.height() * zoomFactor }
++		});
++	}
++#endif
+ 	if (stextflag == TalkID::None && (bItem - 1 == pcursitem || AutoMapShowItems)) {
+ 		ClxDrawOutlineSkipColorZero(out, GetOutlineColor(item, false), position, sprite);
+ 	}
+@@ -1159,6 +1168,9 @@ void DrawGame(const Surface &fullOut, Point position, Displacement offset)
+  */
+ void DrawView(const Surface &out, Point startPosition)
+ {
++#ifdef __IPHONEOS__
++	ClearRenderedItemTargets();
++#endif
+ #ifdef _DEBUG
+ 	DebugCoordsMap.clear();
+ #endif

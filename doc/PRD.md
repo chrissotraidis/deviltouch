@@ -1,6 +1,6 @@
 # DevilTouch — Product Requirements Document
 
-**Version:** 1.0 (2026-07-17)
+**Version:** 1.1 (2026-07-19)
 **Status:** Draft
 **Predecessor document:** [FEASIBILITY.md](../FEASIBILITY.md) — all product decisions here derive from that study's verified findings.
 
@@ -39,8 +39,9 @@ Each goal is stated as a measurable outcome. Priorities: **P0** = required for v
 ### G2 (P0) — Touch is a first-class way to play, not an emulated gamepad.
 - Tap-to-move / tap-to-interact as the default control scheme on touch, with the upstream virtual gamepad preserved as a selectable alternative.
 - A touch targeting mechanism makes every targeted spell (telekinesis, runes, town portal placement) fully usable by touch.
-- Double-tap (or equivalent single-gesture) item pickup.
-- On-screen controls are user-editable: position, size, and opacity, with a reset-to-default.
+- One tap on a visible item highlights it and completes the path-to-pickup action; it must not require a second tap after the character arrives.
+- The optional virtual gamepad is a single settings toggle and stays visually clear of the original HUD. Additional customization or macros are added only when playtesting proves a normal gameplay action cannot be reached cleanly through direct touch.
+- List menus consistently move the red selector on the first tap and confirm only when the selected row is tapped again; world actions remain single-tap.
 - No on-screen control may permanently obscure an in-game panel button (the state upstream closed as `not_planned` in #7336).
 - **Measure:** a full shareware playthrough (town → Cathedral levels) is completable using touch only, including at least one targeted-spell use, with no input task requiring the virtual gamepad.
 
@@ -125,7 +126,7 @@ No install-count or engagement targets: the project is non-commercial by license
 - **M0 — Ground truth (1–2 weeks).** On-device QA of upstream 1.5.5 on modern iPads: Files-app import status, trackpad behavior, virtual-gamepad ergonomics. Converts the study's flagged unknowns into facts; may re-scope G1/G3 details. Repo renamed per C4.
 - **M1 — Developer foundation (G4, G7).** Overlay repo structure: upstream submodule @1.5.5, SUL + notices + modification notice, Xcode personal-team path, CI with ipa artifact and C2 asset guard.
 - **M2 — First user release (G1, G5, G6).** Import flow, first-run experience, auto-configuration, AltStore source JSON. This is v0.9 — the "5 minutes, no computer" release.
-- **M3 — Touch-first (G2).** Tap-to-move behind a setting → default; touch targeting; editable overlay. Ships as v1.0 with G3 QA matrix complete.
+- **M3 — Touch-first (G2).** Direct tap-to-move/interact as the default, renderer-accurate touch targeting, and an optional unobtrusive virtual-gamepad fallback. Ships as v1.0 with G3 QA matrix complete.
 - **M4 — Sustain (G7, G8).** Upstream 1.6.x integration, iPadOS 26 windowing investigation, AltStore PAL evaluation.
 
 ## 9. Goal-based acceptance loop
@@ -140,6 +141,8 @@ Until G2 and G3 pass, each development checkpoint repeats this loop:
 
 Macros are added only if this matrix identifies a normal gameplay action that cannot be reached cleanly through the original HUD or direct touch; convenience alone is not sufficient.
 
+Current Simulator checkpoint: the G1 import core is implemented as a thin native Objective-C bridge outside the engine tree. A missing base archive opens the system document picker; recognized Diablo/Hellfire MPQs are header-checked, copied with native progress into Documents, and re-opened through DevilutionX's existing known-title-asset validation. G2 now has direct sustained movement, one-tap NPC/store interaction, renderer-derived ground-item hover and one-tap path-to-pickup, direct belt/inventory use, two-step selectors across representative front-end, pause, NPC, store, and death menus, plus touch-only Cathedral combat. G3 has native software-keyboard hero naming in Simulator. Physical-device, targeted-spell, broader dungeon/object, complete store/dialog, keyboard-field, and failure-path acceptance remain open, so none of these goals is declared complete.
+
 ## 10. Open questions (tracked from the feasibility study)
 
 1. Does Files-app copy-in work on current iPadOS builds? (M0 answers; shapes how much G1 leans on the picker vs. Files.)
@@ -152,6 +155,6 @@ Macros are added only if this matrix identifies a normal gameplay action that ca
 
 Inherited from the feasibility study §8; the PRD-level top three:
 
-1. **G2 is the schedule risk.** Touch-first controls touch game input logic, not just UI. Mitigation: prototype in M3's first week, keep the upstream gamepad as the always-available fallback, and be willing to ship v1.0 with tap-to-move as opt-in default rather than perfect.
+1. **G2 is the schedule risk.** The shared direct-touch path is working in Simulator, but targeted spells and the full game interaction matrix still need acceptance. Mitigation: keep the upstream gamepad as an optional fallback, fix only shared input handlers, and require physical-iPad regression testing before release.
 2. **Upstream divergence cost.** Active SDL3 migration upstream could churn the patch series. Mitigation: G7's tag-pinning and patch budget; C6's upstream-first ethic keeps the series small.
 3. **Platform-policy shifts** (sideloading rules, iPadOS windowing). Mitigation: multiple channels (G5), G8 investigation, and the fact that G4's build-it-yourself path can never be revoked.

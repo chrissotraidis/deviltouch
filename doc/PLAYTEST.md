@@ -16,21 +16,27 @@ This record describes the current developer checkpoint. It is Simulator evidence
 ## Verified
 
 - The checked-in configure and build scripts produce a Mach-O ARM64 Simulator app.
-- Launching without game data reaches the expected missing-data error instead of crashing.
+- A cold launch with no root MPQs automatically presents the native iPad Files picker instead of dead-ending at the missing-data dialog.
+- The picker supports selecting the five owned Diablo/Hellfire archives together, validates recognized filenames and MPQ headers, copies them into the Files-visible Documents directory, leaves no partial `.importing` file, and reaches the Blizzard splash through the engine's existing title-asset probe.
 - Importing the recognized MPQs reaches the Hellfire/Diablo selector and both data sets are detected.
 - Hellfire single-player hero selection, naming, difficulty selection, and game creation work.
 - A new character loads into Tristram and remains stable during movement.
 - Direct tap is the default iPad input path; the virtual overlay is off by default and the original HUD remains unobstructed.
 - A touch refreshes the world target before issuing Diablo's native left click, avoiding stale cursor tiles during walk, item, NPC, object, and monster interactions.
 - Ground-item targeting clears any prior-frame item-label lock before resolving the current touch, so a previously highlighted label cannot steal the next pickup or movement command.
+- Visible ground items use their rendered sprite bounds for pointer hover and a minimum 44-point touch target. In a controlled test, a potion left several tiles from the hero highlighted under the pointer, then one tap produced the complete walk-and-pickup action and restored the belt count without a second tap.
 - Front-end lists and the in-game pause/options menu follow the same two-step touch and pointer contract: the first tap or click moves the red selector without leaving the screen, and a second confirms the selected row.
 - Store lists use that same select-then-confirm state rule; tapping a different shop row no longer activates the previously selected entry.
+- The two-step rule was exercised through the main menu, Settings, the in-game pause menu, a town NPC menu, Griswold's main shop, individual store-item rows, Back, and the death-menu Load Game action.
 - SDL's synthetic mouse duplicate is discarded while DevilTouch's explicitly translated finger click is retained, preventing a second coordinate-space click from replacing the intended walk or interaction destination.
 - A distant world click produced sustained pathing with the camera following the character rather than a single-tile nudge.
+- One tap on Farnham and one tap on Griswold each produced the full path-to-NPC interaction and opened the intended conversation or shop.
 - `Settings → Controller → Touch Controls` is present, defaults to `Off`, and toggles to `On` in the running Simulator build.
 - When enabled, the optional D-pad/action overlay is positioned above the 128-pixel original HUD and hides while a left or right native panel is open.
 - Duplicate virtual potion shortcuts and the redundant touch menu strip are removed on iPad. Potions remain on the original directly touchable belt/inventory UI.
 - Tapping the original `INV` button opens the inventory and leaves the full grid unobstructed.
+- Tapping a healing potion on the original belt consumes it directly; no virtual potion shortcut is required.
+- Touch-only play entered the Cathedral, targeted a skeleton, sustained movement into combat, reached the death menu, and loaded the save again through the two-step selector.
 - With Simulator hardware-keyboard emulation disconnected, the hero-name field automatically raises the native iPad software keyboard and remains visible above it. The same SDL text-input path is used by multiplayer address/password, chat, gold split, and stash withdrawal fields.
 
 ## Compatibility fixes exercised
@@ -42,9 +48,9 @@ This record describes the current developer checkpoint. It is Simulator evidence
 ## Remaining acceptance gates
 
 - Repeat the full matrix on a physical iPad, including multi-touch, long sessions, suspend/resume, audio, thermal behavior, and 120 Hz devices.
-- Re-run direct tap-to-destination, pickup, NPC/object interaction, and monster targeting on physical hardware and across town/dungeon pathing edge cases.
+- Re-run direct tap-to-destination, one-tap pickup, NPC/object interaction, and monster targeting on physical hardware and across town/dungeon pathing edge cases.
 - Physically exercise the two-step selector in every store subtype and confirmation dialog; the shared handlers are fixed and Simulator front-end/pause-menu behavior is verified, but the full store matrix is not yet complete.
 - Exercise every original HUD panel and optional-overlay action in town and dungeon combat.
-- Add a native document-picker import experience so end users do not need Simulator tooling.
+- Repeat the native document-picker flow on physical iPad hardware, including invalid files, cancellation, replacement, low-storage failure, and backgrounding during the 517 MB base-archive copy.
 - Modernize the UIKit scene lifecycle and orientation path flagged by iOS 26 runtime warnings.
 - Configure signing and verify a clean device archive without proprietary data.

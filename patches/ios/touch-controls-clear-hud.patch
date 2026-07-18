@@ -79,7 +79,7 @@ index 748e6056b..d297c4e02 100644
 +		// old item before the label renderer has a chance to clear its state.
 +		ResetItemlabelHighlighted();
 +#endif
-+		CheckCursMove();
++		CheckCursMove(event.type != SDL_FINGERMOTION);
 +	}
 +	return true;
 +}

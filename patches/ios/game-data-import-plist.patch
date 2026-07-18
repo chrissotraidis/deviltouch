@@ -1,0 +1,30 @@
+diff --git a/Packaging/apple/Info.plist b/Packaging/apple/Info.plist
+--- a/Packaging/apple/Info.plist
++++ b/Packaging/apple/Info.plist
+@@ -48,6 +48,26 @@
+ 	<true/>
+ 	<key>UIFileSharingEnabled</key>
+ 	<true/>
++	<key>UTImportedTypeDeclarations</key>
++	<array>
++		<dict>
++			<key>UTTypeIdentifier</key>
++			<string>com.chrissotraidis.deviltouch.mpq</string>
++			<key>UTTypeDescription</key>
++			<string>MPQ Game Archive</string>
++			<key>UTTypeConformsTo</key>
++			<array>
++				<string>public.data</string>
++			</array>
++			<key>UTTypeTagSpecification</key>
++			<dict>
++				<key>public.filename-extension</key>
++				<array>
++					<string>mpq</string>
++				</array>
++			</dict>
++		</dict>
++	</array>
+ 	<key>CADisableMinimumFrameDurationOnPhone</key>
+ 	<true/>
+ 	<key>UIRequiresFullScreen</key>

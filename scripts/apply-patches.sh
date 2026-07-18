@@ -60,8 +60,23 @@ apply_git_patch \
 
 apply_git_patch \
 	"$UPSTREAM" \
+	"$ROOT/patches/ios/touch-item-targeting.patch" \
+	"touch-friendly item targeting patch"
+
+apply_git_patch \
+	"$UPSTREAM" \
 	"$ROOT/patches/ios/xcode-managed-device-family.patch" \
 	"Xcode-managed device-family patch"
+
+apply_git_patch \
+	"$UPSTREAM" \
+	"$ROOT/patches/ios/game-data-import-engine.patch" \
+	"native game-data import engine patch"
+
+apply_git_patch \
+	"$UPSTREAM" \
+	"$ROOT/patches/ios/game-data-import-plist.patch" \
+	"native game-data import declaration patch"
 
 apply_source_patch \
 	"$BUILD_DIR/_deps/libpng-src" \
