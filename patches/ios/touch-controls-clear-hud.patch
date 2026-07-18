@@ -2,34 +2,38 @@ diff --git a/Source/DiabloUI/diabloui.cpp b/Source/DiabloUI/diabloui.cpp
 index 17fa92863..ea2262883 100644
 --- a/Source/DiabloUI/diabloui.cpp
 +++ b/Source/DiabloUI/diabloui.cpp
-@@ -941,14 +941,25 @@ bool HandleMouseEventList(const SDL_Event &event, UiList *uiList)
- 		return false;
+@@ -942,24 +942,19 @@ bool HandleMouseEventList(const SDL_Event &event, UiList *uiList)
  
  	index += listOffset;
-+#ifndef USE_SDL1
-+	const bool isTouch = event.button.which == SDL_TOUCH_MOUSEID;
-+#else
-+	const bool isTouch = false;
-+#endif
  
- 	if (gfnListFocus != nullptr && SelectedItem != index) {
+-	if (gfnListFocus != nullptr && SelectedItem != index) {
++	if (SelectedItem != index) {
  		UiFocus(index, true, false);
  #ifdef USE_SDL1
  		dbClickTimer = SDL_GetTicks();
 -	} else if (gfnListFocus == NULL || dbClickTimer + 500 >= SDL_GetTicks()) {
-+		if (!isTouch)
-+			return true;
-+	}
-+	if (gfnListFocus == NULL || isTouch || dbClickTimer + 500 >= SDL_GetTicks()) {
- #else
+-#else
 -	} else if (gfnListFocus == nullptr || event.button.clicks >= 2) {
-+		if (!isTouch)
-+			return true;
-+	}
-+	if (gfnListFocus == nullptr || isTouch || event.button.clicks >= 2) {
+-#endif
+-		if (HasAnyOf(uiList->GetItem(index)->uiFlags, UiFlags::ElementHidden | UiFlags::ElementDisabled))
+-			return false;
+-		SelectedItem = index;
+-		UiFocusNavigationSelect();
+-#ifdef USE_SDL1
+-	} else {
+-		dbClickTimer = SDL_GetTicks();
  #endif
- 		if (HasAnyOf(uiList->GetItem(index)->uiFlags, UiFlags::ElementHidden | UiFlags::ElementDisabled))
- 			return false;
++		return true;
+ 	}
+ 
++	if (HasAnyOf(uiList->GetItem(index)->uiFlags, UiFlags::ElementHidden | UiFlags::ElementDisabled))
++		return false;
++	SelectedItem = index;
++	UiFocusNavigationSelect();
++
+ 	return true;
+ }
+ 
 diff --git a/Source/controls/touch/event_handlers.cpp b/Source/controls/touch/event_handlers.cpp
 index 748e6056b..d297c4e02 100644
 --- a/Source/controls/touch/event_handlers.cpp
@@ -88,14 +92,14 @@ index 748e6056b..d297c4e02 100644
 +		mouseEvent.motion.type = SDL_MOUSEMOTION;
 +		mouseEvent.motion.timestamp = event.tfinger.timestamp;
 +		mouseEvent.motion.windowID = event.tfinger.windowID;
-+		mouseEvent.motion.which = SDL_TOUCH_MOUSEID;
++		mouseEvent.motion.which = DevilutionTouchMouseId;
 +		mouseEvent.motion.x = MousePosition.x;
 +		mouseEvent.motion.y = MousePosition.y;
 +	} else {
 +		mouseEvent.button.type = event.type == SDL_FINGERDOWN ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
 +		mouseEvent.button.timestamp = event.tfinger.timestamp;
 +		mouseEvent.button.windowID = event.tfinger.windowID;
-+		mouseEvent.button.which = SDL_TOUCH_MOUSEID;
++		mouseEvent.button.which = DevilutionTouchMouseId;
 +		mouseEvent.button.button = SDL_BUTTON_LEFT;
 +		mouseEvent.button.state = event.type == SDL_FINGERDOWN ? SDL_PRESSED : SDL_RELEASED;
 +		mouseEvent.button.clicks = 1;
@@ -108,7 +112,24 @@ index 748e6056b..d297c4e02 100644
  
  bool HandleGameMenuInteraction(const SDL_Event &event)
  {
-@@ -130,7 +158,7 @@ void HandleStashPanelInteraction(const SDL_Event &event)
+@@ -54,6 +91,6 @@ bool HandleGameMenuInteraction(const SDL_Event &event)
+ 	if (!gmenu_is_active())
+ 		return false;
+-	if (event.type == SDL_FINGERDOWN && gmenu_left_mouse(true))
++	if (event.type == SDL_FINGERDOWN && gmenu_left_mouse(true, true))
+ 		return true;
+ 	if (event.type == SDL_FINGERMOTION && gmenu_on_mouse_move())
+ 		return true;
+@@ -65,7 +102,7 @@ bool HandleStoreInteraction(const SDL_Event &event)
+ 	if (stextflag == TalkID::None)
+ 		return false;
+ 	if (event.type == SDL_FINGERDOWN)
+-		CheckStoreBtn();
++		CheckStoreBtn(true);
+ 	return true;
+ }
+ 
+@@ -130,7 +167,7 @@ void HandleStashPanelInteraction(const SDL_Event &event)
  
  } // namespace
  
@@ -117,7 +138,7 @@ index 748e6056b..d297c4e02 100644
  {
  	SetPointAndClick(false);
  
-@@ -142,7 +170,16 @@ void HandleTouchEvent(const SDL_Event &event)
+@@ -142,7 +179,22 @@ void HandleTouchEvent(const SDL_Event &event)
  		return;
  	}
  
@@ -126,6 +147,12 @@ index 748e6056b..d297c4e02 100644
 +		return;
 +
 +#ifdef __IPHONEOS__
++	if (HandleGameMenuInteraction(event))
++		return;
++
++	if (HandleStoreInteraction(event))
++		return;
++
 +	// Preserve Diablo's native pointer behavior on iPad: a touch selects the
 +	// current target, then the normal left-click path walks, interacts, attacks,
 +	// or uses the tapped panel item.
@@ -135,7 +162,7 @@ index 748e6056b..d297c4e02 100644
  
  	if (HandleGameMenuInteraction(event))
  		return;
-@@ -161,6 +198,14 @@ void HandleTouchEvent(const SDL_Event &event)
+@@ -161,6 +213,14 @@ void HandleTouchEvent(const SDL_Event &event)
  
  bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  {
@@ -150,7 +177,7 @@ index 748e6056b..d297c4e02 100644
  	if (!VirtualGamepadState.isActive || !IsAnyOf(event.type, SDL_FINGERDOWN, SDL_FINGERUP, SDL_FINGERMOTION)) {
  		VirtualGamepadState.primaryActionButton.didStateChange = false;
  		VirtualGamepadState.secondaryActionButton.didStateChange = false;
-@@ -169,6 +214,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -169,6 +229,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  		return false;
  	}
  
@@ -158,7 +185,7 @@ index 748e6056b..d297c4e02 100644
  	if (charMenuButtonEventHandler.Handle(event))
  		return true;
  
-@@ -180,6 +226,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -180,6 +241,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  
  	if (mapMenuButtonEventHandler.Handle(event))
  		return true;
@@ -166,7 +193,7 @@ index 748e6056b..d297c4e02 100644
  
  	if (directionPadEventHandler.Handle(event))
  		return true;
-@@ -199,11 +246,13 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -199,11 +261,13 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  	if (cancelButtonEventHandler.Handle(event))
  		return true;
  
@@ -184,7 +211,21 @@ diff --git a/Source/controls/touch/event_handlers.h b/Source/controls/touch/even
 index afa0e3a25..acc5f3a0c 100644
 --- a/Source/controls/touch/event_handlers.h
 +++ b/Source/controls/touch/event_handlers.h
-@@ -88,6 +88,6 @@ private:
+@@ -6,6 +6,13 @@
+ 
+ namespace devilution {
+ 
++#ifndef USE_SDL1
++// SDL also emits a synthetic mouse event for each finger event. Tag the mouse
++// event translated by DevilutionX separately so the engine can discard only
++// SDL's duplicate while retaining native click behavior.
++constexpr Uint32 DevilutionTouchMouseId = SDL_TOUCH_MOUSEID - 1;
++#endif
++
+ class VirtualDirectionPadEventHandler {
+ public:
+ 	VirtualDirectionPadEventHandler(VirtualDirectionPad *virtualDirectionPad)
+@@ -88,6 +95,6 @@ private:
  	VirtualButtonEventHandler manaButtonEventHandler;
  };
  
@@ -266,25 +307,87 @@ index 5a610f999..c4fa348b5 100644
  }
  
  void VirtualMenuPanelRenderer::Render(RenderFunction renderFunction)
-diff --git a/Source/engine/events.cpp b/Source/engine/events.cpp
-index ce0db7ec2..c480185f4 100644
---- a/Source/engine/events.cpp
-+++ b/Source/engine/events.cpp
-@@ -70,12 +70,14 @@ bool FetchMessage_Real(SDL_Event *event, uint16_t *modState)
- 	if (!movie_playing) {
- 		// SDL generates mouse events from touch-based inputs to provide basic
- 		// touchscreeen support for apps that don't explicitly handle touch events
-+#ifndef __IPHONEOS__
- 		if (IsAnyOf(e.type, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP) && e.button.which == SDL_TOUCH_MOUSEID)
- 			return true;
- 		if (e.type == SDL_MOUSEMOTION && e.motion.which == SDL_TOUCH_MOUSEID)
- 			return true;
- 		if (e.type == SDL_MOUSEWHEEL && e.wheel.which == SDL_TOUCH_MOUSEID)
- 			return true;
-+#endif
- 	}
- #endif
+diff --git a/Source/gmenu.cpp b/Source/gmenu.cpp
+index 04a758cf4..4ab2647c8 100644
+--- a/Source/gmenu.cpp
++++ b/Source/gmenu.cpp
+@@ -312,7 +312,7 @@ bool gmenu_on_mouse_move()
+ 	return true;
+ }
  
+-bool gmenu_left_mouse(bool isDown)
++bool gmenu_left_mouse(bool isDown, bool requireSecondClick)
+ {
+ 	if (!isDown) {
+ 		if (isDraggingSlider) {
+@@ -348,9 +348,13 @@ bool gmenu_left_mouse(bool isDown)
+ 	if (MousePosition.x > screenWidth / 2 + w / 2) {
+ 		return true;
+ 	}
+-	sgpCurrItem = pItem;
+-	PlaySFX(IS_TITLEMOV);
++	const bool wasSelected = sgpCurrItem == pItem;
++	sgpCurrItem = pItem;
++	if (!wasSelected)
++		PlaySFX(IS_TITLEMOV);
++	if (requireSecondClick && !wasSelected)
++		return true;
+ 	if (pItem->isSlider()) {
+ 		isDraggingSlider = GmenuMouseIsOverSlider();
+ 		gmenu_on_mouse_move();
+ 	} else {
+diff --git a/Source/gmenu.h b/Source/gmenu.h
+index 209da6d23..26d538a28 100644
+--- a/Source/gmenu.h
++++ b/Source/gmenu.h
+@@ -80,7 +80,7 @@ void gmenu_set_items(TMenuItem *pItem, void (*gmFunc)());
+ void gmenu_draw(const Surface &out);
+ bool gmenu_presskeys(SDL_Keycode vkey);
+ bool gmenu_on_mouse_move();
+-bool gmenu_left_mouse(bool isDown);
++bool gmenu_left_mouse(bool isDown, bool requireSecondClick = true);
+ 
+ /**
+  * @brief Set the TMenuItem slider position based on the given value
+diff --git a/Source/stores.cpp b/Source/stores.cpp
+index eaa520e2b..ef3c25d77 100644
+--- a/Source/stores.cpp
++++ b/Source/stores.cpp
+@@ -2746,7 +2746,7 @@ void StoreEnter()
+ 	}
+ }
+ 
+-void CheckStoreBtn()
++void CheckStoreBtn(bool requireSecondClick)
+ {
+ 	const Point uiPosition = GetUIRectangle().position;
+ 	if (qtextflag) {
+@@ -2806,7 +2806,11 @@ void CheckStoreBtn()
+ 			}
+ 			if (stext[y].isSelectable() || (stextscrl && y == BackButtonLine())) {
++				const bool wasSelected = stextsel == y;
+ 				stextsel = y;
+-				StoreEnter();
++				if (requireSecondClick && !wasSelected)
++					PlaySFX(IS_TITLEMOV);
++				else
++					StoreEnter();
+ 			}
+ 		}
+ 	}
+diff --git a/Source/stores.h b/Source/stores.h
+index 30d8baebc..e4d3d7f9c 100644
+--- a/Source/stores.h
++++ b/Source/stores.h
+@@ -101,7 +101,7 @@ void StorePrior();
+ void StoreNext();
+ void TakePlrsMoney(int cost);
+ void StoreEnter();
+-void CheckStoreBtn();
++void CheckStoreBtn(bool requireSecondClick = true);
+ void ReleaseStoreBtn();
+ 
+ } // namespace devilution
 diff --git a/Source/options.cpp b/Source/options.cpp
 index 89958748a..5cd6e9ba2 100644
 --- a/Source/options.cpp

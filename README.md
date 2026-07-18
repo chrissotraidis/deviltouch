@@ -31,7 +31,7 @@ For this checkout, the ignored Steam export can be used without copying anything
 
 The script builds the app, boots or reuses an iPad Simulator, installs only the recognized MPQ data into the app's Documents container, and launches it. If the Simulator device is still portrait, rotate it once from the Simulator toolbar; gameplay is designed and tested in landscape.
 
-In play, tap a destination, item, NPC, monster, object, or original HUD control directly. Dragging updates the in-game cursor target. Menu rows select and activate on the same touch rather than applying the action to the previously highlighted row.
+In play, tap a destination, item, NPC, monster, object, or original HUD control directly. Dragging updates the in-game cursor target. List menus use a consistent two-step contract for both touch and pointer input: the first tap or click moves the red selector, and a second on the selected row confirms it.
 
 ## Developer commands
 
@@ -62,7 +62,7 @@ build/ios-simulator/Release-iphonesimulator/devilutionx.app
 
 ## Current limits
 
-This is a source-only developer preview, not a signed public release. Physical-device signing, a native document-picker import flow, iPadOS scene-lifecycle modernization, and complete touch acceptance across every menu and dungeon remain active work. Multiplayer is disabled in the iPad build while the single-player touch experience is stabilized.
+This is a source-only developer preview, not a signed public release. Physical-device signing, a native document-picker import flow, iPadOS scene-lifecycle modernization, and complete touch acceptance across every menu and dungeon remain active work. The iPad software keyboard has been exercised for hero naming in Simulator, but multiplayer is disabled in the iPad build while the single-player touch experience is stabilized.
 
 DevilTouch and DevilutionX do not ship Diablo or Hellfire data. Users must supply files from a legally obtained copy. The code and patches are governed by the [Sustainable Use License](LICENSE.md), including its non-commercial and free-of-charge distribution limits. See [NOTICE.md](NOTICE.md) for the prominent modification and affiliation notice.
 

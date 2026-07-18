@@ -128,7 +128,19 @@ No install-count or engagement targets: the project is non-commercial by license
 - **M3 — Touch-first (G2).** Tap-to-move behind a setting → default; touch targeting; editable overlay. Ships as v1.0 with G3 QA matrix complete.
 - **M4 — Sustain (G7, G8).** Upstream 1.6.x integration, iPadOS 26 windowing investigation, AltStore PAL evaluation.
 
-## 9. Open questions (tracked from the feasibility study)
+## 9. Goal-based acceptance loop
+
+Until G2 and G3 pass, each development checkpoint repeats this loop:
+
+1. Pick the next unverified touch-only flow: front-end lists, hero naming, town movement/NPCs/stores, HUD/inventory/belt/spellbook, ground items, dungeon movement/combat/objects, targeted spells, pause/options, death, save/load, and every confirmation dialog.
+2. Exercise it with direct touch and indirect pointer input. Any list must move its visible selector on the first tap or click and confirm only when the selected row is pressed again; world targets remain single-action.
+3. If text is required, verify the native iPad software keyboard appears automatically, keeps the field visible, and allows completion without a hardware keyboard.
+4. Fix the narrowest shared input handler, rebuild the ARM64 app, re-run the affected flow plus previously verified menu, movement, item, and panel regressions, and record evidence in `doc/PLAYTEST.md`.
+5. Do not declare touch acceptance complete until the full matrix works without a keyboard or mandatory virtual gamepad, first in Simulator and then on physical iPad hardware.
+
+Macros are added only if this matrix identifies a normal gameplay action that cannot be reached cleanly through the original HUD or direct touch; convenience alone is not sufficient.
+
+## 10. Open questions (tracked from the feasibility study)
 
 1. Does Files-app copy-in work on current iPadOS builds? (M0 answers; shapes how much G1 leans on the picker vs. Files.)
 2. What is the shipped ipa's true minimum iOS version (upstream sets 9.0 vs. toolchain default 13.0)? DevilTouch will likely raise it — to what floor?
@@ -136,7 +148,7 @@ No install-count or engagement targets: the project is non-commercial by license
 4. Tap-to-move implementation depth: can it live mostly in the touch event layer, or does it need pathing hooks inside game code? (M3 risk; prototype early.)
 5. SDL behavior under iPadOS 26 free-form window resizing (G8).
 
-## 10. Risks
+## 11. Risks
 
 Inherited from the feasibility study §8; the PRD-level top three:
 
