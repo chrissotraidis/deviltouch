@@ -2,7 +2,7 @@
 
 Date: 2026-07-19
 
-This record describes the current developer checkpoint. It is Simulator evidence, not a claim of physical-device or public-distribution readiness.
+This record describes the current developer checkpoint. It includes Simulator coverage and physical-device build/signing evidence, but is not a claim of public-distribution readiness.
 
 ## Environment
 
@@ -13,9 +13,17 @@ This record describes the current developer checkpoint. It is Simulator evidence
 - Upstream: DevilutionX 1.5.5, commit `7223eeac9e8274fbf665b4de86fda26d3b22c52f`
 - Game data: user-owned Diablo and Hellfire MPQs imported from ignored local storage
 
+Physical-device build target:
+
+- Device: iPad Pro 12.9-inch (6th generation), ARM64, iPadOS 26.5.2 (23F84)
+- Connection: paired, Developer Mode enabled, available through CoreDevice
+- Signing: Xcode-managed Apple Development profile for `com.chrissotraidis.deviltouch`
+
 ## Verified
 
 - The checked-in configure and build scripts produce a Mach-O ARM64 Simulator app.
+- The physical-device toolchain produces a thin Mach-O ARM64 iPhoneOS app with a minimum deployment target of iOS 13.0.
+- Xcode automatic provisioning created a valid development signature and embedded profile for `com.chrissotraidis.deviltouch`; `codesign` verification passed and the signed bundle contains no proprietary game data.
 - A cold launch with no root MPQs automatically presents the native iPad Files picker instead of dead-ending at the missing-data dialog.
 - The picker supports selecting the five owned Diablo/Hellfire archives together, validates recognized filenames and MPQ headers, copies them into the Files-visible Documents directory, leaves no partial `.importing` file, and reaches the Blizzard splash through the engine's existing title-asset probe.
 - Importing the recognized MPQs reaches the Hellfire/Diablo selector and both data sets are detected.
@@ -52,10 +60,11 @@ This record describes the current developer checkpoint. It is Simulator evidence
 
 ## Remaining acceptance gates
 
+- Install is currently blocked by the test iPad's free-team limit of three active development apps. The device reported OpenRCT2Touch, PeonPad, and Daggerpad as the three occupied slots; one must be removed by its owner before DevilTouch can be installed and the physical matrix can continue.
 - Repeat the full matrix on a physical iPad, including multi-touch, long sessions, suspend/resume, audio, thermal behavior, and 120 Hz devices.
 - Re-run direct tap-to-destination, one-tap pickup, NPC/object interaction, and monster targeting on physical hardware and across town/dungeon pathing edge cases.
 - Physically exercise the two-step selector in every store subtype and confirmation dialog; the shared handlers are fixed and Simulator front-end/pause-menu behavior is verified, but the full store matrix is not yet complete.
 - Exercise every optional-overlay action in town and dungeon combat, including sustained physical holds and simultaneous D-pad/action-button touches. The original HUD panels and speedbook have passed the Simulator touch sweep.
 - Repeat the native document-picker flow on physical iPad hardware, including invalid files, cancellation, replacement, low-storage failure, and backgrounding during the 517 MB base-archive copy.
 - Modernize the UIKit scene lifecycle and orientation path flagged by iOS 26 runtime warnings.
-- Configure signing and verify a clean device archive without proprietary data.
+- Produce and validate a distribution archive when a public signing/distribution path is selected; the current verified signature is development-only.
