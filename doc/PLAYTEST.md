@@ -26,15 +26,18 @@ This record describes the current developer checkpoint. It is Simulator evidence
 - Ground-item targeting clears any prior-frame item-label lock before resolving the current touch, so a previously highlighted label cannot steal the next pickup or movement command.
 - Visible ground items use their rendered sprite bounds for pointer hover and a minimum 44-point touch target. In a controlled test, a potion left several tiles from the hero highlighted under the pointer, then one tap produced the complete walk-and-pickup action and restored the belt count without a second tap.
 - Front-end lists and the in-game pause/options menu follow the same two-step touch and pointer contract: the first tap or click moves the red selector without leaving the screen, and a second confirms the selected row.
+- The front-end contract was also exercised with genuine Simulator finger events by installing a diagnostic copy without indirect-pointer opt-in. One physical touch produced SDL's synthetic touch-mouse pair plus the real finger pair; the shared UI event normalizer discarded the duplicate and translated the finger once. A first touch on `Settings` moved the red selector to that row, and a second opened it.
+- The same normalized finger path now covers the regular front-end loop plus the title, dialog, progress, and credits event loops rather than fixing one menu screen at a time.
 - Store lists use that same select-then-confirm state rule; tapping a different shop row no longer activates the previously selected entry.
 - The two-step rule was exercised through the main menu, Settings, the in-game pause menu, a town NPC menu, Griswold's main shop, individual store-item rows, Back, and the death-menu Load Game action.
 - SDL's synthetic mouse duplicate is discarded while DevilTouch's explicitly translated finger click is retained, preventing a second coordinate-space click from replacing the intended walk or interaction destination.
 - A distant world click produced sustained pathing with the camera following the character rather than a single-tile nudge.
 - One tap on Farnham and one tap on Griswold each produced the full path-to-NPC interaction and opened the intended conversation or shop.
 - `Settings → Controller → Touch Controls` is present, defaults to `Off`, and toggles to `On` in the running Simulator build.
-- When enabled, the optional D-pad/action overlay is positioned above the 128-pixel original HUD and hides while a left or right native panel is open.
+- When enabled, the optional D-pad/action overlay remains visible even after a direct world tap switches the engine to pointer mode, is positioned above the 128-pixel original HUD, responds to a D-pad drag, and hides while a left or right native panel is open.
 - Duplicate virtual potion shortcuts and the redundant touch menu strip are removed on iPad. Potions remain on the original directly touchable belt/inventory UI.
 - Tapping the original `INV` button opens the inventory and leaves the full grid unobstructed.
+- The original `CHAR`, `QUESTS`, `MAP`, `INV`, and `SPELLS` controls all opened or toggled their native panels without overlay obstruction. The speedbook also opened and selected Trap Disarm through direct touch.
 - Tapping a healing potion on the original belt consumes it directly; no virtual potion shortcut is required.
 - Touch-only play entered the Cathedral, targeted a skeleton, sustained movement into combat, reached the death menu, and loaded the save again through the two-step selector.
 - With Simulator hardware-keyboard emulation disconnected, the hero-name field automatically raises the native iPad software keyboard and remains visible above it. The same SDL text-input path is used by multiplayer address/password, chat, gold split, and stash withdrawal fields.
@@ -50,7 +53,7 @@ This record describes the current developer checkpoint. It is Simulator evidence
 - Repeat the full matrix on a physical iPad, including multi-touch, long sessions, suspend/resume, audio, thermal behavior, and 120 Hz devices.
 - Re-run direct tap-to-destination, one-tap pickup, NPC/object interaction, and monster targeting on physical hardware and across town/dungeon pathing edge cases.
 - Physically exercise the two-step selector in every store subtype and confirmation dialog; the shared handlers are fixed and Simulator front-end/pause-menu behavior is verified, but the full store matrix is not yet complete.
-- Exercise every original HUD panel and optional-overlay action in town and dungeon combat.
+- Exercise every optional-overlay action in town and dungeon combat, including sustained physical holds and simultaneous D-pad/action-button touches. The original HUD panels and speedbook have passed the Simulator touch sweep.
 - Repeat the native document-picker flow on physical iPad hardware, including invalid files, cancellation, replacement, low-storage failure, and backgrounding during the 517 MB base-archive copy.
 - Modernize the UIKit scene lifecycle and orientation path flagged by iOS 26 runtime warnings.
 - Configure signing and verify a clean device archive without proprietary data.

@@ -1,6 +1,6 @@
 # These reviewable patch files preserve upstream DevilutionX CRLF context.
-patches/**/*.patch whitespace=-space-before-tab
-patches/ios/deviltouch-app-identity.patch -text whitespace=cr-at-eol,-space-before-tab
-patches/ios/touch-controls-clear-hud.patch -text whitespace=cr-at-eol,-space-before-tab
-patches/ios/touch-item-targeting.patch -text whitespace=cr-at-eol,-space-before-tab
-patches/ios/game-data-import-engine.patch -text whitespace=cr-at-eol,-space-before-tab
+patches/**/*.patch whitespace=-blank-at-eol,-blank-at-eof,-space-before-tab
+patches/ios/deviltouch-app-identity.patch -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof,-space-before-tab
+patches/ios/touch-controls-clear-hud.patch -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof,-space-before-tab
+patches/ios/touch-item-targeting.patch -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof,-space-before-tab
+patches/ios/game-data-import-engine.patch -text whitespace=cr-at-eol,-blank-at-eol,-blank-at-eof,-space-before-tab
