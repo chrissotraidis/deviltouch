@@ -1,0 +1,34 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 97547073d..bb4153c9e 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -370,17 +370,25 @@ include(functions/set_relative_file_macro)
+ set_relative_file_macro(${BIN_TARGET})
+ 
+ if(APPLE)
+-  set(MACOSX_BUNDLE_GUI_IDENTIFIER com.diasurgical.devilutionx)
++  if(IOS)
++    set(MACOSX_BUNDLE_GUI_IDENTIFIER com.chrissotraidis.deviltouch)
++    set(MACOSX_BUNDLE_BUNDLE_NAME deviltouch)
++    set(MACOSX_BUNDLE_DISPLAY_NAME DevilTouch)
++  else()
++    set(MACOSX_BUNDLE_GUI_IDENTIFIER com.diasurgical.devilutionx)
++    set(MACOSX_BUNDLE_BUNDLE_NAME devilutionx)
++    set(MACOSX_BUNDLE_DISPLAY_NAME DevilutionX)
++  endif()
+   set(MACOSX_BUNDLE_COPYRIGHT Unlicense)
+-  set(MACOSX_BUNDLE_BUNDLE_NAME devilutionx)
+-  set(MACOSX_BUNDLE_DISPLAY_NAME DevilutionX)
+   set(MACOSX_BUNDLE_INFO_STRING ${PROJECT_VERSION})
+   set(MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION})
+   set(MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION})
+   set(MACOSX_BUNDLE_LONG_VERSION_STRING "Version ${PROJECT_VERSION}")
+   if(IOS)
+     set(MACOSX_BUNDLE_REQUIRED_PLATFORM IPhoneOS)
+-    set_target_properties(${BIN_TARGET} PROPERTIES XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
++    set_target_properties(${BIN_TARGET} PROPERTIES
++      XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${MACOSX_BUNDLE_GUI_IDENTIFIER}"
++      XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
+     set(CMAKE_OSX_DEPLOYMENT_TARGET "9.0")
+   elseif(DARWIN_MAJOR_VERSION GREATER_EQUAL 16)
+     set(MACOSX_BUNDLE_REQUIRED_PLATFORM Carbon)

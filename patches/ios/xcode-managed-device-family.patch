@@ -1,0 +1,16 @@
+diff --git a/Packaging/apple/Info.plist b/Packaging/apple/Info.plist
+index 52754cc11..346ac0b6c 100644
+--- a/Packaging/apple/Info.plist
++++ b/Packaging/apple/Info.plist
+@@ -50,11 +50,6 @@
+ 	<true/>
+ 	<key>CADisableMinimumFrameDurationOnPhone</key>
+ 	<true/>
+-	<key>UIDeviceFamily</key>
+-	<array>
+-		<integer>1</integer>
+-		<integer>2</integer>
+-	</array>
+ 	<key>UIRequiresFullScreen</key>
+ 	<true/>
+ 	<key>UIStatusBarHidden</key>

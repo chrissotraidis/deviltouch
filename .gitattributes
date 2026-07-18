@@ -1,0 +1,3 @@
+# These reviewable patch files preserve upstream DevilutionX CRLF context.
+patches/ios/deviltouch-app-identity.patch -text
+patches/ios/touch-controls-clear-hud.patch -text

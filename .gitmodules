@@ -1,0 +1,3 @@
+[submodule "upstream/DevilutionX"]
+	path = upstream/DevilutionX
+	url = https://github.com/diasurgical/DevilutionX.git

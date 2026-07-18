@@ -1,0 +1,10 @@
+# User-supplied proprietary game data. Never commit or publish these files.
+/ref/
+
+# macOS metadata
+.DS_Store
+**/.DS_Store
+
+# Local build output
+/build/
+/DerivedData/

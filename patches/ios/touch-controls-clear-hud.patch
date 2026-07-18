@@ -1,0 +1,327 @@
+diff --git a/Source/DiabloUI/diabloui.cpp b/Source/DiabloUI/diabloui.cpp
+index 17fa92863..ea2262883 100644
+--- a/Source/DiabloUI/diabloui.cpp
++++ b/Source/DiabloUI/diabloui.cpp
+@@ -941,14 +941,25 @@ bool HandleMouseEventList(const SDL_Event &event, UiList *uiList)
+ 		return false;
+ 
+ 	index += listOffset;
++#ifndef USE_SDL1
++	const bool isTouch = event.button.which == SDL_TOUCH_MOUSEID;
++#else
++	const bool isTouch = false;
++#endif
+ 
+ 	if (gfnListFocus != nullptr && SelectedItem != index) {
+ 		UiFocus(index, true, false);
+ #ifdef USE_SDL1
+ 		dbClickTimer = SDL_GetTicks();
+-	} else if (gfnListFocus == NULL || dbClickTimer + 500 >= SDL_GetTicks()) {
++		if (!isTouch)
++			return true;
++	}
++	if (gfnListFocus == NULL || isTouch || dbClickTimer + 500 >= SDL_GetTicks()) {
+ #else
+-	} else if (gfnListFocus == nullptr || event.button.clicks >= 2) {
++		if (!isTouch)
++			return true;
++	}
++	if (gfnListFocus == nullptr || isTouch || event.button.clicks >= 2) {
+ #endif
+ 		if (HasAnyOf(uiList->GetItem(index)->uiFlags, UiFlags::ElementHidden | UiFlags::ElementDisabled))
+ 			return false;
+diff --git a/Source/controls/touch/event_handlers.cpp b/Source/controls/touch/event_handlers.cpp
+index 748e6056b..d297c4e02 100644
+--- a/Source/controls/touch/event_handlers.cpp
++++ b/Source/controls/touch/event_handlers.cpp
+@@ -8,6 +8,7 @@
+ #include "engine/render/scrollrt.h"
+ #include "gmenu.h"
+ #include "inv.h"
++#include "options.h"
+ #include "panels/spell_book.hpp"
+ #include "qol/stash.h"
+ #include "stores.h"
+@@ -27,7 +28,7 @@ Point ScaleToScreenCoordinates(float x, float y)
+ 	};
+ }
+ 
+-void SimulateMouseMovement(const SDL_Event &event)
++bool SimulateMouseMovement(const SDL_Event &event)
+ {
+ 	Point position = ScaleToScreenCoordinates(event.tfinger.x, event.tfinger.y);
+ 
+@@ -36,10 +37,10 @@ void SimulateMouseMovement(const SDL_Event &event)
+ 	bool isInRightPanel = GetRightPanel().contains(position);
+ 	if (IsStashOpen) {
+ 		if (!spselflag && !isInMainPanel && !isInLeftPanel && !isInRightPanel)
+-			return;
++			return false;
+ 	} else if (invflag) {
+ 		if (!spselflag && !isInMainPanel && !isInRightPanel)
+-			return;
++			return false;
+ 	}
+ 
+ 	MousePosition = position;
+@@ -47,7 +48,36 @@ void SimulateMouseMovement(const SDL_Event &event)
+ 	SetPointAndClick(true);
+ 
+ 	InvalidateInventorySlot();
++	if (gbRunGame)
++		CheckCursMove();
++	return true;
++}
++
++#ifdef __IPHONEOS__
++void ConvertTouchToMouseEvent(SDL_Event &event)
++{
++	SDL_Event mouseEvent {};
++	if (event.type == SDL_FINGERMOTION) {
++		mouseEvent.motion.type = SDL_MOUSEMOTION;
++		mouseEvent.motion.timestamp = event.tfinger.timestamp;
++		mouseEvent.motion.windowID = event.tfinger.windowID;
++		mouseEvent.motion.which = SDL_TOUCH_MOUSEID;
++		mouseEvent.motion.x = MousePosition.x;
++		mouseEvent.motion.y = MousePosition.y;
++	} else {
++		mouseEvent.button.type = event.type == SDL_FINGERDOWN ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
++		mouseEvent.button.timestamp = event.tfinger.timestamp;
++		mouseEvent.button.windowID = event.tfinger.windowID;
++		mouseEvent.button.which = SDL_TOUCH_MOUSEID;
++		mouseEvent.button.button = SDL_BUTTON_LEFT;
++		mouseEvent.button.state = event.type == SDL_FINGERDOWN ? SDL_PRESSED : SDL_RELEASED;
++		mouseEvent.button.clicks = 1;
++		mouseEvent.button.x = MousePosition.x;
++		mouseEvent.button.y = MousePosition.y;
++	}
++	event = mouseEvent;
+ }
++#endif
+ 
+ bool HandleGameMenuInteraction(const SDL_Event &event)
+ {
+@@ -130,7 +158,7 @@ void HandleStashPanelInteraction(const SDL_Event &event)
+ 
+ } // namespace
+ 
+-void HandleTouchEvent(const SDL_Event &event)
++void HandleTouchEvent(SDL_Event &event)
+ {
+ 	SetPointAndClick(false);
+ 
+@@ -142,7 +170,16 @@ void HandleTouchEvent(const SDL_Event &event)
+ 		return;
+ 	}
+ 
+-	SimulateMouseMovement(event);
++	if (!SimulateMouseMovement(event))
++		return;
++
++#ifdef __IPHONEOS__
++	// Preserve Diablo's native pointer behavior on iPad: a touch selects the
++	// current target, then the normal left-click path walks, interacts, attacks,
++	// or uses the tapped panel item.
++	ConvertTouchToMouseEvent(event);
++	return;
++#endif
+ 
+ 	if (HandleGameMenuInteraction(event))
+ 		return;
+@@ -161,6 +198,14 @@ void HandleTouchEvent(const SDL_Event &event)
+ 
+ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+ {
++#ifdef __IPHONEOS__
++	if (!*sgOptions.Controller.showTouchControls || IsLeftPanelOpen() || IsRightPanelOpen()) {
++		VirtualGamepadState.Deactivate();
++		VirtualGamepadState.isActive = true;
++		return false;
++	}
++#endif
++
+ 	if (!VirtualGamepadState.isActive || !IsAnyOf(event.type, SDL_FINGERDOWN, SDL_FINGERUP, SDL_FINGERMOTION)) {
+ 		VirtualGamepadState.primaryActionButton.didStateChange = false;
+ 		VirtualGamepadState.secondaryActionButton.didStateChange = false;
+@@ -169,6 +214,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+ 		return false;
+ 	}
+ 
++#ifndef __IPHONEOS__
+ 	if (charMenuButtonEventHandler.Handle(event))
+ 		return true;
+ 
+@@ -180,6 +226,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+ 
+ 	if (mapMenuButtonEventHandler.Handle(event))
+ 		return true;
++#endif
+ 
+ 	if (directionPadEventHandler.Handle(event))
+ 		return true;
+@@ -199,11 +246,13 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+ 	if (cancelButtonEventHandler.Handle(event))
+ 		return true;
+ 
++#ifndef __IPHONEOS__
+ 	if (healthButtonEventHandler.Handle(event))
+ 		return true;
+ 
+ 	if (manaButtonEventHandler.Handle(event))
+ 		return true;
++#endif
+ 
+ 	return false;
+ }
+diff --git a/Source/controls/touch/event_handlers.h b/Source/controls/touch/event_handlers.h
+index afa0e3a25..acc5f3a0c 100644
+--- a/Source/controls/touch/event_handlers.h
++++ b/Source/controls/touch/event_handlers.h
+@@ -88,6 +88,6 @@ private:
+ 	VirtualButtonEventHandler manaButtonEventHandler;
+ };
+ 
+-void HandleTouchEvent(const SDL_Event &event);
++void HandleTouchEvent(SDL_Event &event);
+ 
+ } // namespace devilution
+diff --git a/Source/controls/touch/gamepad.cpp b/Source/controls/touch/gamepad.cpp
+index 8110dc73f..ff474f78d 100644
+--- a/Source/controls/touch/gamepad.cpp
++++ b/Source/controls/touch/gamepad.cpp
+@@ -86,10 +86,15 @@ void InitializeVirtualGamepad()
+ 	int rightMarginMenuButton1 = rightMarginMenuButton2 + menuPanelButtonSpacing + menuPanelButtonSize.width;
+ 
+ 	int padButtonAreaWidth = round(std::sqrt(2) * (padButtonSize + padButtonSpacing));
++	int touchControlsBottom = gnScreenHeight - inputMargin;
++#ifdef __IPHONEOS__
++	// Keep the touch overlay above Diablo's 128-pixel main panel on iPad.
++	touchControlsBottom -= 128;
++#endif
+ 
+ 	int padButtonRight = gnScreenWidth - inputMargin - padButtonSize / 2;
+ 	int padButtonLeft = padButtonRight - padButtonAreaWidth;
+-	int padButtonBottom = gnScreenHeight - inputMargin - padButtonSize / 2;
++	int padButtonBottom = touchControlsBottom - padButtonSize / 2;
+ 	int padButtonTop = padButtonBottom - padButtonAreaWidth;
+ 
+ 	Rectangle &charButtonArea = VirtualGamepadState.menuPanel.charButton.area;
+@@ -125,7 +130,7 @@ void InitializeVirtualGamepad()
+ 	VirtualDirectionPad &directionPad = VirtualGamepadState.directionPad;
+ 	Circle &directionPadArea = directionPad.area;
+ 	directionPadArea.position.x = inputMargin + directionPadSize / 2;
+-	directionPadArea.position.y = gnScreenHeight - inputMargin - directionPadSize / 2;
++	directionPadArea.position.y = touchControlsBottom - directionPadSize / 2;
+ 	directionPadArea.radius = directionPadSize / 2;
+ 	directionPad.position = directionPadArea.position;
+ 
+diff --git a/Source/controls/touch/renderers.cpp b/Source/controls/touch/renderers.cpp
+index 5a610f999..c4fa348b5 100644
+--- a/Source/controls/touch/renderers.cpp
++++ b/Source/controls/touch/renderers.cpp
+@@ -11,6 +11,7 @@
+ #include "inv.h"
+ #include "levels/gendung.h"
+ #include "minitext.h"
++#include "options.h"
+ #include "panels/ui_panels.hpp"
+ #include "qol/stash.h"
+ #include "stores.h"
+@@ -263,20 +264,31 @@ void VirtualGamepadRenderer::Render(RenderFunction renderFunction)
+ 	if (CurrentEventHandler == DisableInputEventHandler)
+ 		return;
+ 
++#ifdef __IPHONEOS__
++	// Native panels are directly touchable. Hide the overlay while they are open
++	// so it never covers their controls.
++	if (!*sgOptions.Controller.showTouchControls || IsLeftPanelOpen() || IsRightPanelOpen())
++		return;
++#endif
++
+ 	primaryActionButtonRenderer.Render(renderFunction, buttonArt);
+ 	secondaryActionButtonRenderer.Render(renderFunction, buttonArt);
+ 	spellActionButtonRenderer.Render(renderFunction, buttonArt);
+ 	cancelButtonRenderer.Render(renderFunction, buttonArt);
++#ifndef __IPHONEOS__
+ 	healthButtonRenderer.Render(renderFunction, buttonArt);
+ 	manaButtonRenderer.Render(renderFunction, buttonArt);
+ 
+ 	healthButtonRenderer.RenderPotion(renderFunction, potionArt);
+ 	manaButtonRenderer.RenderPotion(renderFunction, potionArt);
++#endif
+ 
+ 	if (leveltype != DTYPE_TOWN)
+ 		standButtonRenderer.Render(renderFunction, buttonArt);
+ 	directionPadRenderer.Render(renderFunction);
++#ifndef __IPHONEOS__
+ 	menuPanelRenderer.Render(renderFunction);
++#endif
+ }
+ 
+ void VirtualMenuPanelRenderer::Render(RenderFunction renderFunction)
+diff --git a/Source/engine/events.cpp b/Source/engine/events.cpp
+index ce0db7ec2..c480185f4 100644
+--- a/Source/engine/events.cpp
++++ b/Source/engine/events.cpp
+@@ -70,12 +70,14 @@ bool FetchMessage_Real(SDL_Event *event, uint16_t *modState)
+ 	if (!movie_playing) {
+ 		// SDL generates mouse events from touch-based inputs to provide basic
+ 		// touchscreeen support for apps that don't explicitly handle touch events
++#ifndef __IPHONEOS__
+ 		if (IsAnyOf(e.type, SDL_MOUSEBUTTONDOWN, SDL_MOUSEBUTTONUP) && e.button.which == SDL_TOUCH_MOUSEID)
+ 			return true;
+ 		if (e.type == SDL_MOUSEMOTION && e.motion.which == SDL_TOUCH_MOUSEID)
+ 			return true;
+ 		if (e.type == SDL_MOUSEWHEEL && e.wheel.which == SDL_TOUCH_MOUSEID)
+ 			return true;
++#endif
+ 	}
+ #endif
+ 
+diff --git a/Source/options.cpp b/Source/options.cpp
+index 89958748a..5cd6e9ba2 100644
+--- a/Source/options.cpp
++++ b/Source/options.cpp
+@@ -63,6 +63,12 @@ constexpr OptionEntryFlags OnlyIfSupportsWindowed = OptionEntryFlags::Invisible;
+ constexpr OptionEntryFlags OnlyIfSupportsWindowed = OptionEntryFlags::None;
+ #endif
+ 
++#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE == 1
++constexpr OptionEntryFlags OnlyOnIos = OptionEntryFlags::None;
++#else
++constexpr OptionEntryFlags OnlyOnIos = OptionEntryFlags::Invisible;
++#endif
++
+ constexpr size_t NumResamplers =
+ #ifdef DEVILUTIONX_RESAMPLER_SPEEX
+     1 +
+@@ -1143,11 +1149,14 @@ std::vector<OptionEntryBase *> GameplayOptions::GetEntries()
+ 
+ ControllerOptions::ControllerOptions()
+     : OptionCategoryBase("Controller", N_("Controller"), N_("Controller Settings"))
++	, showTouchControls("Show Touch Controls", OnlyOnIos, N_("Touch Controls"), N_("Show the optional movement and action overlay. Direct tap remains available."), false)
+ {
+ }
+ std::vector<OptionEntryBase *> ControllerOptions::GetEntries()
+ {
+-	return {};
++	return {
++		&showTouchControls,
++	};
+ }
+ 
+ NetworkOptions::NetworkOptions()
+diff --git a/Source/options.h b/Source/options.h
+index 1ba00e220..965b13e25 100644
+--- a/Source/options.h
++++ b/Source/options.h
+@@ -614,6 +614,9 @@ struct ControllerOptions : OptionCategoryBase {
+ 	ControllerOptions();
+ 	std::vector<OptionEntryBase *> GetEntries() override;
+ 
++	/** @brief Show the optional on-screen movement and action controls. */
++	OptionEntryBoolean showTouchControls;
++
+ 	/** @brief SDL Controller mapping, see SDL_GameControllerDB. */
+ 	char szMapping[1024];
+ 	/** @brief Configure gamepad joysticks deadzone */
