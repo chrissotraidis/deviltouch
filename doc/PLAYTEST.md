@@ -22,6 +22,7 @@ This record describes the current developer checkpoint. It is Simulator evidence
 - A new character loads into Tristram and remains stable during movement.
 - Direct tap is the default iPad input path; the virtual overlay is off by default and the original HUD remains unobstructed.
 - A touch refreshes the world target before issuing Diablo's native left click, avoiding stale cursor tiles during walk, item, NPC, object, and monster interactions.
+- Ground-item targeting clears any prior-frame item-label lock before resolving the current touch, so a previously highlighted label cannot steal the next pickup or movement command.
 - Touch-originated menu clicks select and activate the tapped row in one gesture instead of acting on the previous selection.
 - `Settings → Controller → Touch Controls` is present, defaults to `Off`, and toggles to `On` in the running Simulator build.
 - When enabled, the optional D-pad/action overlay is positioned above the 128-pixel original HUD and hides while a left or right native panel is open.

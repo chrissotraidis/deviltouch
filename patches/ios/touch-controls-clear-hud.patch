@@ -34,12 +34,13 @@ diff --git a/Source/controls/touch/event_handlers.cpp b/Source/controls/touch/ev
 index 748e6056b..d297c4e02 100644
 --- a/Source/controls/touch/event_handlers.cpp
 +++ b/Source/controls/touch/event_handlers.cpp
-@@ -8,6 +8,7 @@
+@@ -8,6 +8,8 @@
  #include "engine/render/scrollrt.h"
  #include "gmenu.h"
  #include "inv.h"
 +#include "options.h"
  #include "panels/spell_book.hpp"
++#include "qol/itemlabels.h"
  #include "qol/stash.h"
  #include "stores.h"
 @@ -27,7 +28,7 @@ Point ScaleToScreenCoordinates(float x, float y)
@@ -64,12 +65,18 @@ index 748e6056b..d297c4e02 100644
  	}
  
  	MousePosition = position;
-@@ -47,7 +48,36 @@ void SimulateMouseMovement(const SDL_Event &event)
+@@ -47,7 +49,42 @@ void SimulateMouseMovement(const SDL_Event &event)
  	SetPointAndClick(true);
  
  	InvalidateInventorySlot();
-+	if (gbRunGame)
++	if (gbRunGame) {
++#ifdef __IPHONEOS__
++		// A label highlighted on the prior frame must not pin the next tap to the
++		// old item before the label renderer has a chance to clear its state.
++		ResetItemlabelHighlighted();
++#endif
 +		CheckCursMove();
++	}
 +	return true;
 +}
 +
