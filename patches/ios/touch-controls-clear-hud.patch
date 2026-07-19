@@ -167,6 +167,27 @@ index d8c43e2c4..d28c06f71 100644
  			std::vector<MenuAction> menuActions = GetMenuActions(event);
  			if (std::any_of(menuActions.begin(), menuActions.end(), [](auto menuAction) { return menuAction != MenuAction_NONE; })) {
  				endMenu = true;
+diff --git a/Source/controls/modifier_hints.cpp b/Source/controls/modifier_hints.cpp
+index 9c702dc07..e46d3edc6 100644
+--- a/Source/controls/modifier_hints.cpp
++++ b/Source/controls/modifier_hints.cpp
+@@ -183,6 +183,16 @@ void FreeModifierHints()
+ 
+ void DrawControllerModifierHints(const Surface &out)
+ {
++#ifdef __IPHONEOS__
++	// These hints are for a physical gamepad modifier. A missed release must not
++	// leave a spell icon floating over the iPad touch/pointer interface.
++	if (ControlDevice != ControlTypes::Gamepad) {
++		PadMenuNavigatorActive = false;
++		PadHotspellMenuActive = false;
++		return;
++	}
++#endif
++
+ 	DrawGamepadMenuNavigator(out);
+ 	DrawGamepadHotspellMenu(out);
+ }
 diff --git a/Source/controls/touch/event_handlers.cpp b/Source/controls/touch/event_handlers.cpp
 index 748e6056b..0e00f3dcf 100644
 --- a/Source/controls/touch/event_handlers.cpp

@@ -45,6 +45,8 @@ On an iPad, launch DevilTouch with no game data installed and the native Files p
 
 In play, tap a destination, visible item, NPC, monster, object, or original HUD control directly. A single ground-item tap highlights it, walks the character to it, and picks it up; dragging updates the in-game cursor target. Press and hold a world target to retain Diablo's original held-left-click behavior for repeated attacks, walking, or consumption. Inventory movement uses one tap to lift and another to place; a long-press drag is not required. A two-finger tap uses an item or performs its stash-transfer action. Direct screen touch, trackpad, mouse, and keyboard may be alternated without changing a mode setting. List menus use a consistent two-step contract for both touch and pointer input: the first tap or click moves the red selector, and a second on the selected row confirms it. Swipe vertically inside merchant lists to move through their entries; swiping does not activate the row where the gesture began. Stock DevilutionX keyboard shortcuts and mouse buttons remain available when hardware is connected.
 
+Text and number prompts—including hero names, chat, gold splitting, and stash withdrawal—request native iPad text input when they open. iPadOS presents its software keyboard when no hardware keyboard is available and uses an attached keyboard without covering the game with the software keyboard.
+
 ## Developer commands
 
 ```sh
