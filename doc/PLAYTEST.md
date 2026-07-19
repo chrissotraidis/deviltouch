@@ -59,7 +59,7 @@ Physical-device build target:
 ## Deployed for physical retest
 
 - Direct screen touches and indirect trackpad contacts are now classified separately. SDL's optional companion finger stream for a trackpad is discarded before it can change direct-touch state; the native mouse path remains intact.
-- Inventory gesture state now resets when a contact ends outside the panel or when iPadOS omits a prior finger-up while switching input devices, preventing the stuck state that previously required an app relaunch.
+- Inventory gesture state resets when a contact ends outside the panel, a real pointer click takes over, or iPadOS reuses a finger ID after omitting its prior finger-up. This prevents both the stuck state that required an app relaunch and the intermittent first inventory tap being swallowed before later taps began working.
 - The two-finger gesture uses a timing window without an arbitrary finger-distance limit. It routes belt items through native item use and open-inventory items through the shared context action, including potion/scroll use and Gillian stash transfers.
 - Finger events consumed by inventory gestures no longer leak into generic control-mode detection or replace item-specific help text with the virtual-gamepad fallback.
 - This input-coexistence build compiled, development-signed, installed in place, and launched on the physical iPad on 2026-07-19. Behavioral acceptance remains with the physical retest matrix below.
