@@ -1,8 +1,8 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 97547073d..bb4153c9e 100644
+index 97547073d..2ae7d4b8c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -370,17 +370,25 @@ include(functions/set_relative_file_macro)
+@@ -370,17 +370,31 @@ include(functions/set_relative_file_macro)
  set_relative_file_macro(${BIN_TARGET})
  
  if(APPLE)
@@ -29,6 +29,12 @@ index 97547073d..bb4153c9e 100644
 +    set_target_properties(${BIN_TARGET} PROPERTIES
 +      XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "${MACOSX_BUNDLE_GUI_IDENTIFIER}"
 +      XCODE_ATTRIBUTE_TARGETED_DEVICE_FAMILY "1,2")
++    if(DEVILTOUCH_IOS_ASSET_CATALOG)
++      target_sources(${BIN_TARGET} PRIVATE "${DEVILTOUCH_IOS_ASSET_CATALOG}")
++      set_source_files_properties("${DEVILTOUCH_IOS_ASSET_CATALOG}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
++      set_target_properties(${BIN_TARGET} PROPERTIES
++        XCODE_ATTRIBUTE_ASSETCATALOG_COMPILER_APPICON_NAME "AppIcon")
++    endif()
      set(CMAKE_OSX_DEPLOYMENT_TARGET "9.0")
    elseif(DARWIN_MAJOR_VERSION GREATER_EQUAL 16)
      set(MACOSX_BUNDLE_REQUIRED_PLATFORM Carbon)
