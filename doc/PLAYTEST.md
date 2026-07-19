@@ -59,8 +59,9 @@ Physical-device build target:
 ## Deployed for physical retest
 
 - Direct screen touches and indirect trackpad contacts are now classified separately. SDL's optional companion finger stream for a trackpad is discarded before it can change direct-touch state; the native mouse path remains intact.
-- Inventory gesture state resets when a contact ends outside the panel, a real pointer click takes over, or iPadOS reuses a finger ID after omitting its prior finger-up. This prevents both the stuck state that required an app relaunch and the intermittent first inventory tap being swallowed before later taps began working.
+- Inventory gesture state resets when a contact ends outside the panel, a real pointer click takes over, iPadOS reuses a finger ID after omitting its prior finger-up, or either finger lifts after a completed two-finger action. This prevents both the stuck state that required an app relaunch and subsequent equip/place taps inheriting the prior action's consumed state.
 - The two-finger gesture uses a timing window without an arbitrary finger-distance limit. It routes belt items through native item use and open-inventory items through the shared context action, including potion/scroll use and Gillian stash transfers.
+- Merchant lists accept vertical swipe gestures in the main list area. Each 32-pixel logical step uses the store's existing next/previous behavior, while row activation is deferred until finger-up and suppressed after scrolling so a swipe cannot accidentally purchase or choose its starting row.
 - Finger events consumed by inventory gestures no longer leak into generic control-mode detection or replace item-specific help text with the virtual-gamepad fallback.
 - This input-coexistence build compiled, development-signed, installed in place, and launched on the physical iPad on 2026-07-19. Behavioral acceptance remains with the physical retest matrix below.
 
@@ -78,6 +79,8 @@ Physical-device build target:
 - Verify a paired Magic Mouse, trackpad, and Magic Keyboard on physical iPad hardware: primary click, secondary click on belt/inventory items, spell casting, hover, wheel scrolling, every stock keyboard shortcut, and modifier combinations.
 - Re-run direct tap-to-destination, one-tap pickup, NPC/object interaction, and monster targeting on physical hardware and across town/dungeon pathing edge cases.
 - Physically exercise the two-step selector in every store subtype and confirmation dialog; the shared handlers are fixed and Simulator front-end/pause-menu behavior is verified, but the full store matrix is not yet complete.
+- Physically sweep vertical merchant-list scrolling in buy, sell, repair, recharge, and identify views, including short drags, long drags, list boundaries, and a tap immediately after a swipe.
+- Verify press-and-hold continuously attacks the retained monster target and releases immediately when the finger lifts; no additional combat macro is currently planned.
 - Exercise every optional-overlay action in town and dungeon combat, including sustained physical holds and simultaneous D-pad/action-button touches. The original HUD panels and speedbook have passed the Simulator touch sweep.
 - Repeat the native document-picker flow on physical iPad hardware, including invalid files, cancellation, replacement, low-storage failure, and backgrounding during the 517 MB base-archive copy.
 - Modernize the UIKit scene lifecycle and orientation path flagged by iOS 26 runtime warnings.

@@ -168,7 +168,7 @@ index d8c43e2c4..d28c06f71 100644
  			if (std::any_of(menuActions.begin(), menuActions.end(), [](auto menuAction) { return menuAction != MenuAction_NONE; })) {
  				endMenu = true;
 diff --git a/Source/controls/touch/event_handlers.cpp b/Source/controls/touch/event_handlers.cpp
-index 748e6056b..677197d27 100644
+index 748e6056b..0e00f3dcf 100644
 --- a/Source/controls/touch/event_handlers.cpp
 +++ b/Source/controls/touch/event_handlers.cpp
 @@ -8,7 +8,9 @@
@@ -203,7 +203,7 @@ index 748e6056b..677197d27 100644
  	}
  
  	MousePosition = position;
-@@ -47,13 +49,165 @@ void SimulateMouseMovement(const SDL_Event &event)
+@@ -47,13 +49,186 @@ void SimulateMouseMovement(const SDL_Event &event)
  	SetPointAndClick(true);
  
  	InvalidateInventorySlot();
@@ -236,6 +236,20 @@ index 748e6056b..677197d27 100644
 +};
 +
 +InventoryTouchGestureState InventoryTouchGesture;
++
++struct StoreTouchGestureState {
++	SDL_TouchID touchId = 0;
++	SDL_FingerID fingerId = 0;
++	int lastY = 0;
++	bool scrolled = false;
++
++	void Reset()
++	{
++		*this = {};
++	}
++};
++
++StoreTouchGestureState StoreTouchGesture;
 +
 +bool IsInventoryTouchGestureActive()
 +{
@@ -278,8 +292,8 @@ index 748e6056b..677197d27 100644
 +	event = MakeTouchMouseButtonEvent(fingerEvent, SDL_MOUSEBUTTONDOWN, SDL_BUTTON_LEFT, position);
 +	SDL_Event mouseUp = MakeTouchMouseButtonEvent(fingerEvent, SDL_MOUSEBUTTONUP, SDL_BUTTON_LEFT, position);
 +	SDL_PushEvent(&mouseUp);
- }
- 
++}
++
 +void RestoreInventoryTouchTarget()
 +{
 +	MousePosition = InventoryTouchGesture.primaryPosition;
@@ -292,13 +306,14 @@ index 748e6056b..677197d27 100644
 +{
 +	constexpr Uint32 TwoFingerTapWindowMs = 450;
 +
-+	// A second down for the primary finger means iPadOS reused its ID without
-+	// delivering the prior up. A different finger is still a valid two-finger
-+	// gesture, unless it arrives after that gesture's timing window.
-+	if (InventoryTouchGesture.primaryDown && event.type == SDL_FINGERDOWN) {
-+		const bool reusedPrimaryFinger = event.tfinger.fingerId == InventoryTouchGesture.primaryFinger;
-+		const bool expiredSecondFinger = event.tfinger.timestamp - InventoryTouchGesture.startedAt > TwoFingerTapWindowMs;
-+		if (reusedPrimaryFinger || expiredSecondFinger)
++	// Preserve only a genuinely new second finger in the current timing window.
++	// Any other down starts a clean gesture, recovering from a missing finger-up.
++	if (IsInventoryTouchGestureActive() && event.type == SDL_FINGERDOWN) {
++		const bool isNewSecondFinger = InventoryTouchGesture.primaryDown
++		    && !InventoryTouchGesture.secondaryDown
++		    && event.tfinger.fingerId != InventoryTouchGesture.primaryFinger
++		    && event.tfinger.timestamp - InventoryTouchGesture.startedAt <= TwoFingerTapWindowMs;
++		if (!isNewSecondFinger)
 +			InventoryTouchGesture.Reset();
 +	}
 +
@@ -324,11 +339,13 @@ index 748e6056b..677197d27 100644
 +		if (event.type != SDL_FINGERUP)
 +			return true;
 +
-+		InventoryTouchGesture.primaryDown = false;
-+		if (!InventoryTouchGesture.usedItem) {
-+			RestoreInventoryTouchTarget();
-+			ConvertTouchTapToMouseClick(event, InventoryTouchGesture.primaryPosition);
++		if (InventoryTouchGesture.usedItem) {
++			InventoryTouchGesture.Reset();
++			return true;
 +		}
++		InventoryTouchGesture.primaryDown = false;
++		RestoreInventoryTouchTarget();
++		ConvertTouchTapToMouseClick(event, InventoryTouchGesture.primaryPosition);
 +		if (!InventoryTouchGesture.secondaryDown)
 +			InventoryTouchGesture.Reset();
 +		return true;
@@ -353,14 +370,18 @@ index 748e6056b..677197d27 100644
 +	if (event.tfinger.fingerId != InventoryTouchGesture.secondaryFinger)
 +		return true;
 +	if (event.type == SDL_FINGERUP) {
++		if (InventoryTouchGesture.usedItem) {
++			InventoryTouchGesture.Reset();
++			return true;
++		}
 +		InventoryTouchGesture.secondaryDown = false;
 +		if (!InventoryTouchGesture.primaryDown)
 +			InventoryTouchGesture.Reset();
 +	}
 +	return true;
-+}
+ }
 +#endif
-+
+ 
  bool HandleGameMenuInteraction(const SDL_Event &event)
  {
  	if (!gmenu_is_active())
@@ -370,16 +391,61 @@ index 748e6056b..677197d27 100644
  		return true;
  	if (event.type == SDL_FINGERMOTION && gmenu_on_mouse_move())
  		return true;
-@@ -65,7 +219,7 @@ bool HandleStoreInteraction(const SDL_Event &event)
- 	if (stextflag == TalkID::None)
+@@ -62,10 +237,51 @@ bool HandleGameMenuInteraction(const SDL_Event &event)
+ 
+ bool HandleStoreInteraction(const SDL_Event &event)
+ {
+-	if (stextflag == TalkID::None)
++	if (stextflag == TalkID::None) {
++#ifdef __IPHONEOS__
++		StoreTouchGesture.Reset();
++#endif
  		return false;
++	}
++
++#ifdef __IPHONEOS__
++	constexpr int ScrollStep = 32;
++	if (event.type == SDL_FINGERDOWN) {
++		StoreTouchGesture.touchId = event.tfinger.touchId;
++		StoreTouchGesture.fingerId = event.tfinger.fingerId;
++		StoreTouchGesture.lastY = MousePosition.y;
++		StoreTouchGesture.scrolled = false;
++		return true;
++	}
++
++	if (event.tfinger.touchId != StoreTouchGesture.touchId
++	    || event.tfinger.fingerId != StoreTouchGesture.fingerId)
++		return true;
++
++	if (event.type == SDL_FINGERMOTION) {
++		while (MousePosition.y <= StoreTouchGesture.lastY - ScrollStep) {
++			StoreDown();
++			StoreTouchGesture.lastY -= ScrollStep;
++			StoreTouchGesture.scrolled = true;
++		}
++		while (MousePosition.y >= StoreTouchGesture.lastY + ScrollStep) {
++			StoreUp();
++			StoreTouchGesture.lastY += ScrollStep;
++			StoreTouchGesture.scrolled = true;
++		}
++		return true;
++	}
++
++	if (event.type == SDL_FINGERUP) {
++		if (!StoreTouchGesture.scrolled)
++			CheckStoreBtn(true);
++		ReleaseStoreBtn();
++		StoreTouchGesture.Reset();
++	}
++#else
  	if (event.type == SDL_FINGERDOWN)
 -		CheckStoreBtn();
 +		CheckStoreBtn(true);
++#endif
  	return true;
  }
  
-@@ -130,8 +284,33 @@ void HandleStashPanelInteraction(const SDL_Event &event)
+@@ -130,8 +346,33 @@ void HandleStashPanelInteraction(const SDL_Event &event)
  
  } // namespace
  
@@ -414,7 +480,7 @@ index 748e6056b..677197d27 100644
  	SetPointAndClick(false);
  
  	if (Handler.Handle(event)) {
-@@ -142,7 +321,38 @@ void HandleTouchEvent(const SDL_Event &event)
+@@ -142,7 +383,38 @@ void HandleTouchEvent(const SDL_Event &event)
  		return;
  	}
  
@@ -454,7 +520,7 @@ index 748e6056b..677197d27 100644
  
  	if (HandleGameMenuInteraction(event))
  		return;
-@@ -161,6 +371,14 @@ void HandleTouchEvent(const SDL_Event &event)
+@@ -161,6 +433,14 @@ void HandleTouchEvent(const SDL_Event &event)
  
  bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  {
@@ -469,7 +535,7 @@ index 748e6056b..677197d27 100644
  	if (!VirtualGamepadState.isActive || !IsAnyOf(event.type, SDL_FINGERDOWN, SDL_FINGERUP, SDL_FINGERMOTION)) {
  		VirtualGamepadState.primaryActionButton.didStateChange = false;
  		VirtualGamepadState.secondaryActionButton.didStateChange = false;
-@@ -169,6 +387,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -169,6 +449,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  		return false;
  	}
  
@@ -477,7 +543,7 @@ index 748e6056b..677197d27 100644
  	if (charMenuButtonEventHandler.Handle(event))
  		return true;
  
-@@ -180,6 +399,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -180,6 +461,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  
  	if (mapMenuButtonEventHandler.Handle(event))
  		return true;
@@ -485,7 +551,7 @@ index 748e6056b..677197d27 100644
  
  	if (directionPadEventHandler.Handle(event))
  		return true;
-@@ -199,11 +419,13 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -199,11 +481,13 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  	if (cancelButtonEventHandler.Handle(event))
  		return true;
  
