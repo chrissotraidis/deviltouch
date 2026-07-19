@@ -24,6 +24,7 @@ Physical-device build target:
 - The checked-in configure and build scripts produce a Mach-O ARM64 Simulator app.
 - The physical-device toolchain produces a thin Mach-O ARM64 iPhoneOS app with a minimum deployment target of iOS 13.0.
 - Xcode automatic provisioning created a valid development signature and embedded profile for `com.chrissotraidis.deviltouch`; `codesign` verification passed and the signed bundle contains no proprietary game data.
+- The development-signed app installed and launched on the paired physical iPad. A subsequent in-place update retained the same app-data-container identity, and `Documents/diablo.ini` was read back successfully after installation; owned MPQs and saves were not removed or recopied.
 - A cold launch with no root MPQs automatically presents the native iPad Files picker instead of dead-ending at the missing-data dialog.
 - The picker supports selecting the five owned Diablo/Hellfire archives together, validates recognized filenames and MPQ headers, copies them into the Files-visible Documents directory, leaves no partial `.importing` file, and reaches the Blizzard splash through the engine's existing title-asset probe.
 - Importing the recognized MPQs reaches the Hellfire/Diablo selector and both data sets are detected.
@@ -55,6 +56,14 @@ Physical-device build target:
 - With Simulator hardware-keyboard forwarding enabled, `I` toggled the inventory, `Tab` toggled the automap, and Down/Return selected and loaded the saved game from the death menu.
 - Input diagnostics proved that an ordinary Simulator host right-click, without native pointer forwarding, arrives only as a finger event plus SDL's synthetic left mouse event. This is not a valid external-mouse test; **I/O → Input → Send Pointer to Device** must be enabled so UIKit can deliver primary, secondary, and scroll events. The real pointer button-down path now refreshes the inventory target at the button coordinates before invoking Diablo's original mouse handler.
 
+## Deployed for physical retest
+
+- Direct screen touches and indirect trackpad contacts are now classified separately. SDL's optional companion finger stream for a trackpad is discarded before it can change direct-touch state; the native mouse path remains intact.
+- Inventory gesture state now resets when a contact ends outside the panel or when iPadOS omits a prior finger-up while switching input devices, preventing the stuck state that previously required an app relaunch.
+- The two-finger gesture uses a timing window without an arbitrary finger-distance limit. It routes belt items through native item use and open-inventory items through the shared context action, including potion/scroll use and Gillian stash transfers.
+- Finger events consumed by inventory gestures no longer leak into generic control-mode detection or replace item-specific help text with the virtual-gamepad fallback.
+- This input-coexistence build compiled, development-signed, installed in place, and launched on the physical iPad on 2026-07-19. Behavioral acceptance remains with the physical retest matrix below.
+
 ## Compatibility fixes exercised
 
 - libpng no longer selects the obsolete macOS `<fp.h>` path when compiling for iOS with Xcode 26.
@@ -63,9 +72,9 @@ Physical-device build target:
 
 ## Remaining acceptance gates
 
-- Install is currently blocked by the test iPad's free-team limit of three active development apps. The device reported OpenRCT2Touch, PeonPad, and Daggerpad as the three occupied slots; one must be removed by its owner before DevilTouch can be installed and the physical matrix can continue.
 - Repeat the full matrix on a physical iPad, including multi-touch, long sessions, suspend/resume, audio, thermal behavior, and 120 Hz devices.
-- Physically verify one-finger grab/place and two-finger use on belt and inventory items, including potions, scrolls, books, equipment, full/empty resource states, and a second finger that lands outside the gesture radius.
+- With the Magic Keyboard/trackpad attached before launch, alternate direct screen taps and trackpad clicks repeatedly in menus, the world, inventory, and stash without relaunching.
+- Physically verify one-finger lift/place and two-finger context action on belt, inventory, and stash items, including potions, scrolls, books, equipment, full/empty resource states, and widely separated fingers.
 - Verify a paired Magic Mouse, trackpad, and Magic Keyboard on physical iPad hardware: primary click, secondary click on belt/inventory items, spell casting, hover, wheel scrolling, every stock keyboard shortcut, and modifier combinations.
 - Re-run direct tap-to-destination, one-tap pickup, NPC/object interaction, and monster targeting on physical hardware and across town/dungeon pathing edge cases.
 - Physically exercise the two-step selector in every store subtype and confirmation dialog; the shared handlers are fixed and Simulator front-end/pause-menu behavior is verified, but the full store matrix is not yet complete.
