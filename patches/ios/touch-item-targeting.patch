@@ -1,5 +1,5 @@
 diff --git a/Source/cursor.cpp b/Source/cursor.cpp
-index c5af4f927..470df2457 100644
+index c5af4f927..a5c6564b0 100644
 --- a/Source/cursor.cpp
 +++ b/Source/cursor.cpp
 @@ -5,7 +5,9 @@
@@ -26,7 +26,7 @@ index c5af4f927..470df2457 100644
 +
 +int8_t FindRenderedItemTarget(Point position, bool useTouchTarget)
 +{
-+	constexpr int MinimumTouchTargetSize = 44;
++	constexpr int MinimumTouchTargetSize = 56;
 +	int8_t bestItem = -1;
 +	int bestDistanceSquared = 0;
 +
@@ -172,3 +172,4 @@ index 0770bd5e2..b3075d733 100644
  #ifdef _DEBUG
  	DebugCoordsMap.clear();
  #endif
+

@@ -166,7 +166,7 @@ index d8c43e2c4..d28c06f71 100644
  			if (std::any_of(menuActions.begin(), menuActions.end(), [](auto menuAction) { return menuAction != MenuAction_NONE; })) {
  				endMenu = true;
 diff --git a/Source/controls/touch/event_handlers.cpp b/Source/controls/touch/event_handlers.cpp
-index 748e6056b..a31d8d066 100644
+index 748e6056b..21dd7999b 100644
 --- a/Source/controls/touch/event_handlers.cpp
 +++ b/Source/controls/touch/event_handlers.cpp
 @@ -8,7 +8,9 @@
@@ -201,7 +201,7 @@ index 748e6056b..a31d8d066 100644
  	}
  
  	MousePosition = position;
-@@ -47,13 +49,48 @@ void SimulateMouseMovement(const SDL_Event &event)
+@@ -47,13 +49,152 @@ void SimulateMouseMovement(const SDL_Event &event)
  	SetPointAndClick(true);
  
  	InvalidateInventorySlot();
@@ -217,6 +217,40 @@ index 748e6056b..a31d8d066 100644
  }
  
 +#ifdef __IPHONEOS__
++struct InventoryTouchGestureState {
++	SDL_TouchID touchId = 0;
++	SDL_FingerID primaryFinger = 0;
++	SDL_FingerID secondaryFinger = 0;
++	Uint32 startedAt = 0;
++	Point primaryPosition {};
++	int8_t inventoryItem = -1;
++	bool primaryDown = false;
++	bool secondaryDown = false;
++	bool usedItem = false;
++
++	void Reset()
++	{
++		*this = {};
++	}
++};
++
++InventoryTouchGestureState InventoryTouchGesture;
++
++SDL_Event MakeTouchMouseButtonEvent(const SDL_TouchFingerEvent &fingerEvent, Uint32 type, Uint8 button, Point position)
++{
++	SDL_Event mouseEvent {};
++	mouseEvent.button.type = type;
++	mouseEvent.button.timestamp = fingerEvent.timestamp;
++	mouseEvent.button.windowID = fingerEvent.windowID;
++	mouseEvent.button.which = DevilutionTouchMouseId;
++	mouseEvent.button.button = button;
++	mouseEvent.button.state = type == SDL_MOUSEBUTTONDOWN ? SDL_PRESSED : SDL_RELEASED;
++	mouseEvent.button.clicks = 1;
++	mouseEvent.button.x = position.x;
++	mouseEvent.button.y = position.y;
++	return mouseEvent;
++}
++
 +void ConvertTouchToMouseEvent(SDL_Event &event)
 +{
 +	SDL_Event mouseEvent {};
@@ -227,18 +261,88 @@ index 748e6056b..a31d8d066 100644
 +		mouseEvent.motion.which = DevilutionTouchMouseId;
 +		mouseEvent.motion.x = MousePosition.x;
 +		mouseEvent.motion.y = MousePosition.y;
-+	} else {
-+		mouseEvent.button.type = event.type == SDL_FINGERDOWN ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP;
-+		mouseEvent.button.timestamp = event.tfinger.timestamp;
-+		mouseEvent.button.windowID = event.tfinger.windowID;
-+		mouseEvent.button.which = DevilutionTouchMouseId;
-+		mouseEvent.button.button = SDL_BUTTON_LEFT;
-+		mouseEvent.button.state = event.type == SDL_FINGERDOWN ? SDL_PRESSED : SDL_RELEASED;
-+		mouseEvent.button.clicks = 1;
-+		mouseEvent.button.x = MousePosition.x;
-+		mouseEvent.button.y = MousePosition.y;
-+	}
++	} else
++		mouseEvent = MakeTouchMouseButtonEvent(event.tfinger, event.type == SDL_FINGERDOWN ? SDL_MOUSEBUTTONDOWN : SDL_MOUSEBUTTONUP, SDL_BUTTON_LEFT, MousePosition);
 +	event = mouseEvent;
++}
++
++void ConvertTouchTapToMouseClick(SDL_Event &event, Point position)
++{
++	const SDL_TouchFingerEvent fingerEvent = event.tfinger;
++	event = MakeTouchMouseButtonEvent(fingerEvent, SDL_MOUSEBUTTONDOWN, SDL_BUTTON_LEFT, position);
++	SDL_Event mouseUp = MakeTouchMouseButtonEvent(fingerEvent, SDL_MOUSEBUTTONUP, SDL_BUTTON_LEFT, position);
++	SDL_PushEvent(&mouseUp);
++}
++
++void RestoreInventoryTouchTarget()
++{
++	MousePosition = InventoryTouchGesture.primaryPosition;
++	SetPointAndClick(true);
++	InvalidateInventorySlot();
++	CheckCursMove(true);
++}
++
++bool HandleInventoryTouchGesture(SDL_Event &event)
++{
++	constexpr Uint32 TwoFingerTapWindowMs = 450;
++	constexpr int MaximumFingerSeparation = 96;
++
++	if (!InventoryTouchGesture.primaryDown) {
++		if (event.type != SDL_FINGERDOWN || pcursinvitem == -1)
++			return false;
++
++		InventoryTouchGesture.touchId = event.tfinger.touchId;
++		InventoryTouchGesture.primaryFinger = event.tfinger.fingerId;
++		InventoryTouchGesture.startedAt = event.tfinger.timestamp;
++		InventoryTouchGesture.primaryPosition = MousePosition;
++		InventoryTouchGesture.inventoryItem = pcursinvitem;
++		InventoryTouchGesture.primaryDown = true;
++		return true;
++	}
++
++	if (event.tfinger.touchId != InventoryTouchGesture.touchId)
++		return false;
++
++	if (event.tfinger.fingerId == InventoryTouchGesture.primaryFinger) {
++		if (event.type == SDL_FINGERMOTION)
++			return false;
++		if (event.type != SDL_FINGERUP)
++			return true;
++
++		InventoryTouchGesture.primaryDown = false;
++		if (!InventoryTouchGesture.usedItem) {
++			RestoreInventoryTouchTarget();
++			ConvertTouchTapToMouseClick(event, InventoryTouchGesture.primaryPosition);
++		}
++		if (!InventoryTouchGesture.secondaryDown)
++			InventoryTouchGesture.Reset();
++		return true;
++	}
++
++	if (event.type == SDL_FINGERDOWN && !InventoryTouchGesture.secondaryDown) {
++		InventoryTouchGesture.secondaryFinger = event.tfinger.fingerId;
++		InventoryTouchGesture.secondaryDown = true;
++
++		const int deltaX = MousePosition.x - InventoryTouchGesture.primaryPosition.x;
++		const int deltaY = MousePosition.y - InventoryTouchGesture.primaryPosition.y;
++		const int distanceSquared = deltaX * deltaX + deltaY * deltaY;
++		const Uint32 elapsed = event.tfinger.timestamp - InventoryTouchGesture.startedAt;
++		if (elapsed <= TwoFingerTapWindowMs && distanceSquared <= MaximumFingerSeparation * MaximumFingerSeparation) {
++			RestoreInventoryTouchTarget();
++			UseInvItem(InventoryTouchGesture.inventoryItem);
++			InventoryTouchGesture.usedItem = true;
++		}
++		return true;
++	}
++
++	if (event.tfinger.fingerId != InventoryTouchGesture.secondaryFinger)
++		return true;
++	if (event.type == SDL_FINGERUP) {
++		InventoryTouchGesture.secondaryDown = false;
++		if (!InventoryTouchGesture.primaryDown)
++			InventoryTouchGesture.Reset();
++	}
++	return true;
 +}
 +#endif
 +
@@ -251,7 +355,7 @@ index 748e6056b..a31d8d066 100644
  		return true;
  	if (event.type == SDL_FINGERMOTION && gmenu_on_mouse_move())
  		return true;
-@@ -65,7 +102,7 @@ bool HandleStoreInteraction(const SDL_Event &event)
+@@ -65,7 +206,7 @@ bool HandleStoreInteraction(const SDL_Event &event)
  	if (stextflag == TalkID::None)
  		return false;
  	if (event.type == SDL_FINGERDOWN)
@@ -260,7 +364,7 @@ index 748e6056b..a31d8d066 100644
  	return true;
  }
  
-@@ -130,7 +167,7 @@ void HandleStashPanelInteraction(const SDL_Event &event)
+@@ -130,7 +271,7 @@ void HandleStashPanelInteraction(const SDL_Event &event)
  
  } // namespace
  
@@ -269,7 +373,7 @@ index 748e6056b..a31d8d066 100644
  {
  	SetPointAndClick(false);
  
-@@ -142,7 +179,22 @@ void HandleTouchEvent(const SDL_Event &event)
+@@ -142,7 +283,25 @@ void HandleTouchEvent(const SDL_Event &event)
  		return;
  	}
  
@@ -284,6 +388,9 @@ index 748e6056b..a31d8d066 100644
 +	if (HandleStoreInteraction(event))
 +		return;
 +
++	if (HandleInventoryTouchGesture(event))
++		return;
++
 +	// Preserve Diablo's native pointer behavior on iPad: a touch selects the
 +	// current target, then the normal left-click path walks, interacts, attacks,
 +	// or uses the tapped panel item.
@@ -293,7 +400,7 @@ index 748e6056b..a31d8d066 100644
  
  	if (HandleGameMenuInteraction(event))
  		return;
-@@ -161,6 +213,14 @@ void HandleTouchEvent(const SDL_Event &event)
+@@ -161,6 +320,14 @@ void HandleTouchEvent(const SDL_Event &event)
  
  bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  {
@@ -308,7 +415,7 @@ index 748e6056b..a31d8d066 100644
  	if (!VirtualGamepadState.isActive || !IsAnyOf(event.type, SDL_FINGERDOWN, SDL_FINGERUP, SDL_FINGERMOTION)) {
  		VirtualGamepadState.primaryActionButton.didStateChange = false;
  		VirtualGamepadState.secondaryActionButton.didStateChange = false;
-@@ -169,6 +229,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -169,6 +336,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  		return false;
  	}
  
@@ -316,7 +423,7 @@ index 748e6056b..a31d8d066 100644
  	if (charMenuButtonEventHandler.Handle(event))
  		return true;
  
-@@ -180,6 +241,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -180,6 +348,7 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  
  	if (mapMenuButtonEventHandler.Handle(event))
  		return true;
@@ -324,7 +431,7 @@ index 748e6056b..a31d8d066 100644
  
  	if (directionPadEventHandler.Handle(event))
  		return true;
-@@ -199,11 +261,13 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
+@@ -199,11 +368,13 @@ bool VirtualGamepadEventHandler::Handle(const SDL_Event &event)
  	if (cancelButtonEventHandler.Handle(event))
  		return true;
  
@@ -438,6 +545,35 @@ index 5a610f999..c4fa348b5 100644
  }
  
  void VirtualMenuPanelRenderer::Render(RenderFunction renderFunction)
+diff --git a/Source/diablo.cpp b/Source/diablo.cpp
+index c67a5f58c..381708c8e 100644
+--- a/Source/diablo.cpp
++++ b/Source/diablo.cpp
+@@ -87,6 +87,7 @@
+ #include "utils/utf8.hpp"
+ 
+ #ifndef USE_SDL1
++#include "controls/touch/event_handlers.h"
+ #include "controls/touch/gamepad.h"
+ #include "controls/touch/renderers.h"
+ #endif
+@@ -731,6 +732,16 @@ void GameEventHandler(const SDL_Event &event, uint16_t modState)
+ 		return;
+ 	case SDL_MOUSEBUTTONDOWN:
+ 		MousePosition = { event.button.x, event.button.y };
++#ifdef __IPHONEOS__
++		// UIKit can deliver a button press without a preceding pointer-motion
++		// event. Refresh the target at the click coordinates so an external
++		// mouse or trackpad right-click uses the item actually under the pointer.
++		if (event.button.which != DevilutionTouchMouseId && gbRunGame) {
++			InvalidateInventorySlot();
++			ResetItemlabelHighlighted();
++			CheckCursMove();
++		}
++#endif
+ 		HandleMouseButtonDown(event.button.button, modState);
+ 		return;
+ 	case SDL_MOUSEBUTTONUP:
 diff --git a/Source/engine/dx.cpp b/Source/engine/dx.cpp
 index db35dbdee..80bd0efa7 100644
 --- a/Source/engine/dx.cpp

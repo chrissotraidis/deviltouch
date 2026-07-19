@@ -33,3 +33,5 @@ open -a Simulator --args -CurrentDeviceUDID "$DEVICE"
 xcrun simctl launch "$DEVICE" "$BUNDLE_ID"
 
 echo "Launched $BUNDLE_ID on iPad Simulator $DEVICE"
+echo "Pointer QA: enable I/O > Input > Send Pointer to Device in Simulator."
+echo "Keyboard QA: enable I/O > Keyboard > Connect Hardware Keyboard in Simulator."
