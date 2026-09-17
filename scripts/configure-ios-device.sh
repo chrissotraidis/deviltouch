@@ -18,9 +18,14 @@ command -v xcodebuild >/dev/null 2>&1 || {
 if [ ! -f "$UPSTREAM/CMakeLists.txt" ]; then
 	git -C "$ROOT" submodule update --init upstream/DevilutionX
 fi
-"$ROOT/scripts/apply-patches.sh" "$BUILD_DIR"
+python3 "$ROOT/scripts/verify-sources.py"
 
-cmake \
+set --
+if [ -f "$ROOT/dependencies.cmake" ]; then
+	set -- -C "$ROOT/dependencies.cmake"
+fi
+
+cmake "$@" \
 	-S "$UPSTREAM" \
 	-B "$BUILD_DIR" \
 	-G Xcode \
@@ -32,6 +37,6 @@ cmake \
 	-DCMAKE_BUILD_TYPE=Release
 
 # Dependency sources exist only after the first configure pass.
-"$ROOT/scripts/apply-patches.sh" "$BUILD_DIR"
+python3 "$ROOT/scripts/apply-dependency-patches.py" "$BUILD_DIR"
 
 echo "Configured: $BUILD_DIR"

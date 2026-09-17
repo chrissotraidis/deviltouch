@@ -1,0 +1,35 @@
+{
+  "engine": {
+    "path": "upstream/DevilutionX",
+    "repository": "https://github.com/chrissotraidis/DevilutionX.git",
+    "upstream": "https://github.com/diasurgical/DevilutionX.git",
+    "base": "7223eeac9e8274fbf665b4de86fda26d3b22c52f",
+    "commit": "ecff940dd0fc0f9debc877578b194eedd0faeef5",
+    "branch": "deviltouch/ios-1.5.5",
+    "license": "Sustainable Use License 1.0"
+  },
+  "package_patch_exceptions": [
+    {
+      "name": "libfmt",
+      "repository": "https://github.com/fmtlib/fmt",
+      "base": "10.0.0",
+      "file": "include/fmt/format-inl.h",
+      "patch": "patches/dependencies/fmt10-xcode26-consteval.patch",
+      "before_sha256": "538da68b4806138fc35ab2f8ad615c3aa6579c14573cd71451ab18758c99e3f1",
+      "after_sha256": "c4c65ea2f32b8f4bb5bd52ae1d23a51760e0b5dd4159e3c7f4d961fb6506a7bc",
+      "owner": "DevilTouch maintainers",
+      "purpose": "Existing Xcode 26 compiler compatibility only; no game behavior"
+    },
+    {
+      "name": "libpng",
+      "repository": "https://github.com/pnggroup/libpng",
+      "base": "0a158f3506502dfa23edfc42790dfaed82efba17",
+      "file": "pngpriv.h",
+      "patch": "patches/dependencies/libpng-xcode26-target-os-mac.patch",
+      "before_sha256": "f67226900f5000ad38180a929e4fc2d362c0fabaf4db1da048c4de5bf36d110b",
+      "after_sha256": "174600057d2240e504d244d81a5a5a246ad342ff9547f8a9b1f7ed6abb4dd38c",
+      "owner": "DevilTouch maintainers",
+      "purpose": "Existing Xcode 26 compiler compatibility only; no game behavior"
+    }
+  ]
+}

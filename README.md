@@ -34,7 +34,7 @@
 
 DevilTouch is a focused iPad integration for [DevilutionX](https://github.com/diasurgical/DevilutionX), the modern source port of the original Diablo engine. It is not an emulator, a streamed desktop session, or a repackaged copy of the game.
 
-It keeps DevilutionX pinned and reviewable, adds a small iPad-specific patch series, and supplies the native import and build workflow needed to make the game feel at home on an iPad:
+It keeps DevilutionX pinned and reviewable, maintains its existing iPad changes as ordinary source commits, and supplies the native import and build workflow needed to make the game feel at home on an iPad:
 
 | | What it means |
 |---|---|
@@ -43,7 +43,7 @@ It keeps DevilutionX pinned and reviewable, adds a small iPad-specific patch ser
 | **Bring the hardware you like** | Screen touch, Magic Keyboard, trackpad, and mouse can be alternated without changing an input mode. |
 | **Bring your own game** | DevilTouch never downloads or bundles Diablo data. A native Files picker imports MPQs from a copy you legally own. |
 | **Run natively** | The device build is a thin Mach-O ARM64 iPadOS app produced with CMake and Xcode—not an emulated desktop binary. |
-| **Stay close to upstream** | DevilutionX 1.5.5 is pinned as a submodule. iPad changes remain in a small, reproducible patch layer. |
+| **Stay close to upstream** | DevilutionX 1.5.5 is pinned as a submodule. iPad changes live in a pinned, upstream-connected [maintained fork](https://github.com/chrissotraidis/DevilutionX/tree/deviltouch/ios-1.5.5). |
 
 ## See it in action
 
@@ -92,7 +92,7 @@ Use the 10-character team identifier associated with your Apple Development sign
 DEVELOPMENT_TEAM=YOURTEAMID ./scripts/run-ios-device.sh
 ```
 
-The script configures the pinned engine, applies the checked-in patch series, builds a Release ARM64 app, asks Xcode to provision it, verifies the signature, finds the paired iPad, installs the app, and launches it.
+The script configures the pinned engine, verifies the maintained engine pin and prepares two compiler-only dependency fixes, builds a Release ARM64 app, asks Xcode to provision it, verifies the signature, finds the paired iPad, installs the app, and launches it.
 
 If more than one iPad is connected, select one explicitly:
 
@@ -183,7 +183,7 @@ DevilTouch is intentionally a thin integration layer. The renderer, game rules, 
 
 ```mermaid
 flowchart LR
-    U["Pinned DevilutionX 1.5.5"] --> P["Reviewable iPad patch series"]
+    U["Pinned DevilutionX 1.5.5"] --> P["Maintained iPad source commits"]
     N["Native Objective-C Files import"] --> X["CMake and Xcode workflow"]
     P --> X
     X --> A["Native ARM64 iPadOS app"]
@@ -191,12 +191,12 @@ flowchart LR
     F --> A
 ```
 
-The upstream source is pinned at DevilutionX commit `7223eeac9e8274fbf665b4de86fda26d3b22c52f` (release 1.5.5). Keeping the integration as an overlay makes every modification inspectable and makes future upstream updates a deliberate patch-rebase rather than an opaque source fork.
+The upstream base remains DevilutionX `7223eeac9e8274fbf665b4de86fda26d3b22c52f` (1.5.5). The selected maintained commit is `ecff940dd0fc0f9debc877578b194eedd0faeef5`, recorded in the gitlink and [`sources.lock.json`](sources.lock.json). Engine changes are ordinary commits retaining upstream history.
 
 | Path | Purpose |
 |---|---|
-| [`upstream/DevilutionX`](upstream/DevilutionX) | Pinned official upstream source submodule |
-| [`patches/ios`](patches/ios) | Direct touch, item targeting, native import hooks, app identity, and device configuration |
+| [`upstream/DevilutionX`](upstream/DevilutionX) | Pinned upstream-connected maintained engine submodule |
+| [`patches/ios`](patches/ios) | Historical engine patches; no production replay |
 | [`patches/dependencies`](patches/dependencies) | Narrow Xcode 26 compatibility fixes for pinned dependencies |
 | [`platform/ios`](platform/ios) | Native document picker, copy progress, validation bridge, and app icon |
 | [`scripts`](scripts) | Reproducible configure, build, import, install, launch, and asset-safety commands |
@@ -228,6 +228,15 @@ build/ios-device/Release-iphoneos/devilutionx.app
 ```
 
 The device builder produces an unsigned ARM64 app when `DEVELOPMENT_TEAM` is omitted, which is useful for compile verification. Supplying a team enables Xcode-managed signing and an installable development build.
+
+## Source maintenance and release qualification
+
+See [source maintenance](doc/SOURCE_MAINTENANCE.md) for exact pins, the unchanged
+upstream base, historical patch mapping, source archives and rollback. The
+requested AltStore Classic IPA is **not published**: the selected static libmpq
+GPL/engine license combination and LGPL delivery require reconciliation. See
+[the component-specific release gates](doc/RELEASE_RIGHTS.md). Free distribution
+and a fork badge do not resolve those gates.
 
 ## Project status
 
@@ -322,7 +331,7 @@ Issues and focused pull requests are welcome, especially when they include:
 3. Whether the issue occurs with direct touch, pointer, keyboard, or the optional overlay
 4. A regression check against nearby controls or menus
 
-Keep changes small and upstream-friendly. General engine bugs belong with [DevilutionX](https://github.com/diasurgical/DevilutionX); iPad integration, import, signing, and DevilTouch-specific input behavior belong here. Never attach or commit proprietary game archives.
+Keep changes small and upstream-friendly. Start app-specific and uncertain issues here with the app commit, engine pin and useful logs. Route a confirmed upstream issue to DevilutionX only after isolating it against upstream. Never attach or commit proprietary game archives.
 
 Before opening a change:
 
@@ -333,7 +342,7 @@ git diff --check
 
 ## License, game data, and attribution
 
-DevilTouch is free of charge and non-commercial. The code and patches are governed by the [Sustainable Use License](LICENSE.md), including its non-commercial distribution limits. Modified distributions must preserve the license, upstream notices, and the prominent modification notice in [`NOTICE.md`](NOTICE.md).
+DevilTouch is free of charge and non-commercial. The engine and DevilTouch integration retain the [Sustainable Use License](LICENSE.md), including its non-commercial distribution limits. Dependencies retain their own licenses; this is not a blanket license for the combined app. Modified distributions must preserve the license, upstream notices, and the prominent modification notice in [`NOTICE.md`](NOTICE.md).
 
 DevilTouch and DevilutionX do **not** ship Diablo or Hellfire game data. You must supply files from a legally obtained copy. Do not upload MPQs to issues, pull requests, build artifacts, mirrors, or release bundles.
 
