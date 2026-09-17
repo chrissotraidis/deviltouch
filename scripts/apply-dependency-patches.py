@@ -5,7 +5,8 @@ root = pathlib.Path(__file__).resolve().parents[1]
 if len(sys.argv) != 2:
     sys.exit('Usage: apply-dependency-patches.py BUILD_DIR')
 for item in json.loads((root / 'sources.lock.json').read_text())['package_patch_exceptions']:
-    source = pathlib.Path(sys.argv[1]) / '_deps' / (item['name'] + '-src')
+    source = (root / 'dependencies' / item['name'] if (root / 'SOURCE_MANIFEST.json').exists()
+              else pathlib.Path(sys.argv[1]) / '_deps' / (item['name'] + '-src'))
     target = source / item['file']
     if not target.is_file():
         sys.exit('Missing configured dependency: ' + str(target))
