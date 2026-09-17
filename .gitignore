@@ -8,3 +8,6 @@
 # Local build output
 /build/
 /DerivedData/
+
+# Python validation caches
+__pycache__/
