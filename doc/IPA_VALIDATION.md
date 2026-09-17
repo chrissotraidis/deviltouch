@@ -34,8 +34,7 @@ Exact commits are recorded by `sources.lock.json` and packaged provenance.
   copyright and newly packaged notices/provenance.
 - Package audit: bundle `com.chrissotraidis.deviltouch`, short version 1.5.5,
   build 2, minimum iOS 13.0, ARM64. Unsigned with no provisioning profile or
-  signing entitlements. No retail MPQ/save/key material; 68 component notice
-  files plus modification, license and rebuild documents.
+  signing entitlements. No retail MPQ/save/key material; 68 bundled notice, source-credit, modification, license and rebuild documents.
 - Reader rollback rehearsed in a disposable exported tree: all 1,098 regular
   baseline files matched after reversing the release fork delta. Final package
 identities are in the accompanying provenance and SHA256SUMS release assets.
