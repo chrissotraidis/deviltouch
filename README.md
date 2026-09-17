@@ -28,7 +28,7 @@
 ![DevilTouch running in Tristram on iPad](doc/images/deviltouch-tristram.webp)
 
 > [!IMPORTANT]
-> **DevilTouch is currently a source-only developer preview.** The native iPad build, signing, installation, first-run Files import, and real gameplay have been exercised on physical hardware. There is not yet a public IPA, TestFlight build, or App Store release. Building it today requires a Mac and Xcode.
+> **DevilTouch is a developer preview.** [Release downloads](https://github.com/chrissotraidis/deviltouch/releases) include the unsigned AltStore Classic IPA when published, plus matching source, notices and checksums. Version 1.5.5 build 2 replaces the archive reader with MIT mpqfs. Earlier builds were exercised on physical iPad; the new candidate has separate [validation evidence](doc/IPA_VALIDATION.md).
 
 ## The original descent. A native iPad experience.
 
@@ -43,7 +43,7 @@ It keeps DevilutionX pinned and reviewable, maintains its existing iPad changes 
 | **Bring the hardware you like** | Screen touch, Magic Keyboard, trackpad, and mouse can be alternated without changing an input mode. |
 | **Bring your own game** | DevilTouch never downloads or bundles Diablo data. A native Files picker imports MPQs from a copy you legally own. |
 | **Run natively** | The device build is a thin Mach-O ARM64 iPadOS app produced with CMake and Xcode—not an emulated desktop binary. |
-| **Stay close to upstream** | DevilutionX 1.5.5 is pinned as a submodule. iPad changes live in a pinned, upstream-connected [maintained fork](https://github.com/chrissotraidis/DevilutionX/tree/deviltouch/ios-1.5.5). |
+| **Stay close to upstream** | DevilutionX 1.5.5 is pinned as a submodule. iPad changes live in a pinned, upstream-connected [maintained fork](https://github.com/chrissotraidis/DevilutionX/tree/deviltouch/ios-mpqfs-release). |
 
 ## See it in action
 
@@ -55,6 +55,10 @@ It keeps DevilutionX pinned and reviewable, maintains its existing iPad changes 
 
 ## Install on an iPad
 
+For AltStore Classic, download the IPA from [Releases](https://github.com/chrissotraidis/deviltouch/releases), then use **My Apps → +** in AltStore to select it. AltStore signs it for your own Apple account. Supply legally owned game MPQs through the Files importer. Keep the same signing identity when updating an existing install; do not uninstall to fix a mismatch. See [source rebuild and installation details](doc/REBUILDING.md).
+
+### Build locally with Xcode
+
 ### What you need
 
 - A Mac with a current Xcode installation
@@ -63,7 +67,7 @@ It keeps DevilutionX pinned and reviewable, maintains its existing iPad changes 
 - A paired iPad with Developer Mode enabled
 - `DIABDAT.MPQ` from a legally obtained copy of Diablo; Hellfire files are optional
 
-The current build was verified with an Apple silicon Mac, Xcode 26.6, an iPad Pro 12.9-inch (6th generation), and iPadOS 26.5.2. The generated app targets iPadOS 13.0 or newer, but that is not yet a claim of complete testing across every compatible iPad.
+The pre-release baseline was verified with an Apple silicon Mac, Xcode 26.6, an iPad Pro 12.9-inch (6th generation), and iPadOS 26.5.2. The generated app targets iPadOS 13.0 or newer, but that is not yet a claim of complete testing across every compatible iPad.
 
 ### 1. Clone everything
 
@@ -191,7 +195,7 @@ flowchart LR
     F --> A
 ```
 
-The upstream base remains DevilutionX `7223eeac9e8274fbf665b4de86fda26d3b22c52f` (1.5.5). The selected maintained commit is `ecff940dd0fc0f9debc877578b194eedd0faeef5`, recorded in the gitlink and [`sources.lock.json`](sources.lock.json). Engine changes are ordinary commits retaining upstream history.
+The upstream base remains DevilutionX `7223eeac9e8274fbf665b4de86fda26d3b22c52f` (1.5.5). The selected maintained commit is `f4098a0c834d5e81354700260d05f1c1718c244f`, recorded in the gitlink and [`sources.lock.json`](sources.lock.json). Engine changes are ordinary commits retaining upstream history.
 
 | Path | Purpose |
 |---|---|
@@ -233,14 +237,13 @@ The device builder produces an unsigned ARM64 app when `DEVELOPMENT_TEAM` is omi
 
 See [source maintenance](doc/SOURCE_MAINTENANCE.md) for exact pins, the unchanged
 upstream base, historical patch mapping, source archives and rollback. The
-requested AltStore Classic IPA is **not published**: the selected static libmpq
-GPL/engine license combination and LGPL delivery require reconciliation. See
-[the component-specific release gates](doc/RELEASE_RIGHTS.md). Free distribution
-and a fork badge do not resolve those gates.
+AltStore Classic candidate uses MIT mpqfs in place of GPL libmpq. Its full nested
+source archive and LGPL rebuild route accompany the IPA. See [component terms](doc/RELEASE_RIGHTS.md)
+and [release validation](doc/IPA_VALIDATION.md).
 
 ## Project status
 
-### Verified in the current checkpoint
+### Earlier physical-iPad baseline evidence
 
 - Native ARM64 Simulator and physical-iPad compilation
 - Xcode-managed development signing, strict signature verification, installation, and launch
@@ -252,7 +255,7 @@ and a fork badge do not resolve those gates.
 - Simulator keyboard text entry and core hardware-keyboard shortcuts
 - A no-proprietary-assets guard for tracked repository content
 
-### Still being validated before a public binary release
+### Preview limitations and further validation
 
 - Complete physical-iPad touch, Magic Keyboard, trackpad, and mouse matrix across the full game
 - All store variants, confirmation dialogs, targeted spells, and inventory/stash edge cases

@@ -41,6 +41,8 @@ cmake "$@" \
 	-DCMAKE_TOOLCHAIN_FILE="$UPSTREAM/CMake/platforms/ios.toolchain.cmake" \
 	-DPLATFORM="$platform" \
 	-DDEVILTOUCH_IOS_ASSET_CATALOG="$ROOT/platform/ios/Assets.xcassets" \
+	-DDEVILTOUCH_APP_VERSION=1.5.5 \
+	-DDEVILTOUCH_BUILD_NUMBER=2 \
 	-DENABLE_BITCODE=OFF \
 	-DDISABLE_ZERO_TIER=ON \
 	-DCMAKE_BUILD_TYPE=Release

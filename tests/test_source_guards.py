@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -44,6 +45,27 @@ class SourceGuards(unittest.TestCase):
             self.assertNotEqual(subprocess.run(command,capture_output=True).returncode,0)
             target.chmod(0o644);target.write_text('changed')
             self.assertNotEqual(subprocess.run(command,capture_output=True).returncode,0)
+
+    def test_personal_relink_only_exempts_lgpl_library_trees(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=pathlib.Path(temp)
+            (root/'scripts').mkdir()
+            shutil.copy(ROOT/'scripts/verify-sources.py',root/'scripts')
+            (root/'sources.lock.json').write_text(json.dumps({'engine':{'path':'engine'}}))
+            manifest={}
+            for name in ['dependencies/sdl_audiolib/code.cpp','dependencies/libsmackerdec/code.cpp','engine/code.cpp']:
+                target=root/name;target.parent.mkdir(parents=True,exist_ok=True)
+                target.write_text('original');target.chmod(0o644)
+                manifest[name]={'sha256':hashlib.sha256(b'original').hexdigest(),'mode':0o644}
+            (root/'SOURCE_MANIFEST.json').write_text(json.dumps(manifest))
+            command=['python3',str(root/'scripts/verify-sources.py')]
+            for name in ['sdl_audiolib','libsmackerdec']:
+                (root/'dependencies'/name/'code.cpp').write_text('modified')
+            self.assertNotEqual(subprocess.run(command,capture_output=True).returncode,0)
+            env=dict(os.environ,DEVILTOUCH_REBUILD_LGPL='1')
+            self.assertEqual(subprocess.run(command,capture_output=True,env=env).returncode,0)
+            (root/'engine/code.cpp').write_text('unexpected')
+            self.assertNotEqual(subprocess.run(command,capture_output=True,env=env).returncode,0)
 
 if __name__=='__main__':
     unittest.main()
