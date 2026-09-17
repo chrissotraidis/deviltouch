@@ -82,7 +82,7 @@ After configuring/building and committing intended app changes:
 ```sh
 python3 scripts/source-archive.py build/ios-device /absolute/output/deviltouch-source.tar.gz
 mkdir /absolute/new/restore
- tar -xzf /absolute/output/deviltouch-source.tar.gz -C /absolute/new/restore
+tar -xzf /absolute/output/deviltouch-source.tar.gz -C /absolute/new/restore
 cd /absolute/new/restore/deviltouch-source
 python3 scripts/verify-sources.py
 ./scripts/build-ios-device.sh
