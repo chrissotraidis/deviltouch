@@ -31,7 +31,11 @@ with tempfile.TemporaryDirectory() as temp:
     for source, destination in [(root, stage), (root / 'upstream/DevilutionX', stage / 'upstream/DevilutionX')]:
         destination.mkdir(parents=True, exist_ok=True)
         with tarfile.open(fileobj=io.BytesIO(git(source, 'archive', 'HEAD'))) as archive:
-            archive.extractall(destination, filter='data')
+            # The archive is generated directly from the reviewed local Git commit.
+            for member in archive.getmembers():
+                if pathlib.PurePosixPath(member.name).is_absolute() or '..' in pathlib.PurePosixPath(member.name).parts:
+                    raise SystemExit('Unsafe Git archive member')
+            archive.extractall(destination)
     cache = ['# Exact local sources; no FetchContent download is needed.']
     for source in sources:
         name = source.name[:-4]
