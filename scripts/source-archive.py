@@ -45,6 +45,10 @@ with tempfile.TemporaryDirectory() as temp:
     cache.append('set(FETCHCONTENT_FULLY_DISCONNECTED ON CACHE BOOL "" FORCE)')
     (stage / 'dependencies.cmake').write_text('\n'.join(cache) + '\n')
     (stage / 'SOURCE_PROVENANCE.json').write_text(json.dumps({'app_commit': git(root, 'rev-parse', 'HEAD').decode().strip(), 'engine': json.loads((root/'sources.lock.json').read_text())['engine'], 'release_status': 'Not qualified for binary publication; see doc/RELEASE_RIGHTS.md'}, indent=2)+'\n')
+    # Git archives may use group-writable modes; normalize for ordinary tar/umask restoration.
+    for file in stage.rglob('*'):
+        if file.is_file() and not file.is_symlink():
+            file.chmod(0o755 if file.stat().st_mode & 0o111 else 0o644)
     (stage / 'SOURCE_MANIFEST.json').write_text(json.dumps(manifest(stage), indent=2)+'\n')
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with tarfile.open(args.output, 'w:gz') as archive:
