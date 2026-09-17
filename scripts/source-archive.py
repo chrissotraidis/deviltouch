@@ -16,13 +16,15 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('build_dir', type=pathlib.Path)
 parser.add_argument('output', type=pathlib.Path)
 args = parser.parse_args()
+if os.environ.get('DEVILTOUCH_REBUILD_LGPL'):
+    raise SystemExit('Personal modified-library builds are not release artifacts')
 subprocess.run(['python3', str(root / 'scripts/verify-sources.py')], check=True)
 if git(root, 'status', '--porcelain', '--untracked-files=all').strip():
     raise SystemExit('Commit intended app changes before exporting source')
 if args.output.exists():
     raise SystemExit('Refusing to overwrite an existing artifact')
 sources = sorted((args.build_dir / '_deps').glob('*-src'))
-required = {'asio','libfmt','libmpq','libpng','libsmackerdec','libsodium','sdl2','sdl_audiolib','sdl_image','simpleini'}
+required = {'asio','libfmt','mpqfs','libpng','libsmackerdec','libsodium','sdl2','sdl_audiolib','sdl_image','simpleini'}
 if {p.name[:-4] for p in sources} != required:
     raise SystemExit('Configured dependency set differs from the qualified Apple source graph')
 with tempfile.TemporaryDirectory() as temp:
@@ -44,7 +46,7 @@ with tempfile.TemporaryDirectory() as temp:
         cache.append('set(FETCHCONTENT_SOURCE_DIR_' + name.upper() + ' "${CMAKE_CURRENT_LIST_DIR}/dependencies/' + name + '" CACHE PATH "" FORCE)')
     cache.append('set(FETCHCONTENT_FULLY_DISCONNECTED ON CACHE BOOL "" FORCE)')
     (stage / 'dependencies.cmake').write_text('\n'.join(cache) + '\n')
-    (stage / 'SOURCE_PROVENANCE.json').write_text(json.dumps({'app_commit': git(root, 'rev-parse', 'HEAD').decode().strip(), 'engine': json.loads((root/'sources.lock.json').read_text())['engine'], 'release_status': 'Not qualified for binary publication; see doc/RELEASE_RIGHTS.md'}, indent=2)+'\n')
+    (stage / 'SOURCE_PROVENANCE.json').write_text(json.dumps({'app_commit': git(root, 'rev-parse', 'HEAD').decode().strip(), 'engine': json.loads((root/'sources.lock.json').read_text())['engine'], 'release_status': 'Free non-commercial DevilTouch release; component terms and rebuild instructions in doc/RELEASE_RIGHTS.md'}, indent=2)+'\n')
     # Git archives may use group-writable modes; normalize for ordinary tar/umask restoration.
     for file in stage.rglob('*'):
         if file.is_file() and not file.is_symlink():

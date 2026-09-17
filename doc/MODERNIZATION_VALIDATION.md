@@ -1,9 +1,7 @@
 # Source-maintenance validation — 17 September 2026
 
 Source migration is delivered through [PR #1](https://github.com/chrissotraidis/deviltouch/pull/1);
-the PR records its merge status. IPA publication remains blocked by [component-specific rights and
-relink gates](RELEASE_RIGHTS.md). No public release, new hardware installation or
-new gameplay acceptance is claimed.
+merged as `9ce31c245f0fc68a5696ae57e8cd70416fcebf95`. This historical record predates the authorized MIT archive-reader replacement. See [IPA validation](IPA_VALIDATION.md) for the release follow-up. No new hardware installation or gameplay acceptance is inferred from this source migration.
 
 ## Evidence
 

@@ -14,3 +14,5 @@ if [ ! -x "$APP/devilutionx" ]; then
 fi
 
 echo "Built: $APP"
+
+python3 "$ROOT/scripts/record-build.py" "$APP"

@@ -4,8 +4,8 @@
     "repository": "https://github.com/chrissotraidis/DevilutionX.git",
     "upstream": "https://github.com/diasurgical/DevilutionX.git",
     "base": "7223eeac9e8274fbf665b4de86fda26d3b22c52f",
-    "commit": "ecff940dd0fc0f9debc877578b194eedd0faeef5",
-    "branch": "deviltouch/ios-1.5.5",
+    "commit": "f4098a0c834d5e81354700260d05f1c1718c244f",
+    "branch": "deviltouch/ios-mpqfs-release",
     "license": "Sustainable Use License 1.0"
   },
   "package_patch_exceptions": [
@@ -31,5 +31,10 @@
       "owner": "DevilTouch maintainers",
       "purpose": "Existing Xcode 26 compiler compatibility only; no game behavior"
     }
-  ]
+  ],
+  "mpq_reader": {
+    "repository": "https://github.com/diasurgical/mpqfs.git",
+    "commit": "9423bd48d04c8a0c51d3df6ce328e66785e3b441",
+    "license": "MIT"
+  }
 }

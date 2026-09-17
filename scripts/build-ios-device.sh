@@ -55,3 +55,5 @@ else
 	echo "Built unsigned ARM64 device app: $APP"
 	echo "Set DEVELOPMENT_TEAM to create an installable development build."
 fi
+
+python3 "$ROOT/scripts/record-build.py" "$APP"

@@ -9,14 +9,17 @@ def git(*args):
 try:
     archive_manifest = root / 'SOURCE_MANIFEST.json'
     if archive_manifest.exists():
+        modified_lgpl = os.environ.get('DEVILTOUCH_REBUILD_LGPL') == '1'
         for name, expected in json.loads(archive_manifest.read_text()).items():
+            if modified_lgpl and name.startswith(('dependencies/sdl_audiolib/', 'dependencies/libsmackerdec/')):
+                continue
             file = root / name
             if 'link' in expected:
                 if not file.is_symlink() or os.readlink(file) != expected['link']:
                     raise ValueError('Source archive symlink mismatch: ' + name)
             elif not file.is_file() or hashlib.sha256(file.read_bytes()).hexdigest() != expected['sha256'] or file.stat().st_mode & 0o777 != expected['mode']:
                 raise ValueError('Source archive mismatch: ' + name)
-        print('Verified restored source archive')
+        print('Verified restored source archive' if not modified_lgpl else 'Personal LGPL rebuild: library edits allowed; remaining source verified')
         sys.exit(0)
     if not (engine / 'CMakeLists.txt').exists():
         raise ValueError('Initialize sources with git submodule update --init --recursive')

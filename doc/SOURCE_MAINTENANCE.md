@@ -19,11 +19,11 @@ The preserved local engine had 26 changed files, all exactly reproduced by the
 six checked-in iOS patches: no additional private engine changes were selected.
 All 1,100 original tracked files matched in bytes and modes.
 
-The selected [maintained fork](https://github.com/chrissotraidis/DevilutionX/tree/deviltouch/ios-1.5.5)
+The selected [maintained fork](https://github.com/chrissotraidis/DevilutionX/tree/deviltouch/ios-mpqfs-release)
 is a GitHub-connected fork of `diasurgical/DevilutionX` (verified via the GitHub
 API). Commit `05d557e057cb7bda3825514e1c292daff56b7569` contains the existing
 integration; `ecff940dd0fc0f9debc877578b194eedd0faeef5` adds its branch and
-modification notice. The gitlink and `sources.lock.json` select that exact commit.
+modification notice. The original migration selected that commit. The authorized release follow-up selects `f4098a0c834d5e81354700260d05f1c1718c244f`, adding MIT mpqfs archive reading and component credits; see [release validation](IPA_VALIDATION.md).
 The engine remains under its Sustainable Use License; no license is replaced.
 
 Both `configure-ios-device.sh` and `configure-ios-simulator.sh` consume this same
@@ -49,7 +49,7 @@ These exceptions should be removed only in a separate dependency upgrade that
 proves the compiler issue is fixed upstream. No upgrade occurred here.
 
 Other dependencies remain pinned in the engine's `3rdParty/*/CMakeLists.txt`.
-Apple builds select SDL2, SDL_image, SDL_audiolib, libfmt, libpng, libmpq,
+Apple builds select SDL2, SDL_image, SDL_audiolib, libfmt, libpng, mpqfs,
 libsmackerdec, libsodium (including its nested source), asio and simpleini.
 Apple SDK zlib/bzip2 and system frameworks are toolchain inputs, not privately
 vendored libraries. Keep every component's own license and notices.
@@ -68,7 +68,7 @@ The engine verifier fails on a wrong commit or dirty/untracked engine files.
 Do not reset dirty sources to make it pass. Preserve work on a branch first.
 Source releases use clean app commits and include nested dependency source.
 
-New engine fixes belong in ordinary commits on `deviltouch/ios-1.5.5`.
+New engine fixes belong in ordinary commits on `deviltouch/ios-mpqfs-release`.
 Compare against the recorded base with `git diff BASE..HEAD`; review and test
 before advancing the app gitlink and lock together. Do not change a shared
 fork's default branch or silently upgrade another app. Upstream contributions
