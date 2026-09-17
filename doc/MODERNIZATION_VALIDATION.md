@@ -1,7 +1,7 @@
 # Source-maintenance validation — 17 September 2026
 
-Source migration is implemented in [PR #1](https://github.com/chrissotraidis/deviltouch/pull/1),
-not merged. IPA publication remains blocked by [component-specific rights and
+Source migration is delivered through [PR #1](https://github.com/chrissotraidis/deviltouch/pull/1);
+the PR records its merge status. IPA publication remains blocked by [component-specific rights and
 relink gates](RELEASE_RIGHTS.md). No public release, new hardware installation or
 new gameplay acceptance is claimed.
 

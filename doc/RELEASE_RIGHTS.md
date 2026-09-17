@@ -22,6 +22,35 @@ The engine's inherited `MACOSX_BUNDLE_COPYRIGHT Unlicense` value also requires
 correction before publication; it is not evidence that the selected engine is
 unlicensed or permissively licensed.
 
+## Recheck: the current pin is blocked, not every future IPA
+
+On 2026-09-17, a second upstream check found two developments that the initial
+review missed:
+
+- libmpq was relicensed to LGPL-2.1-or-later beginning with commit
+  `f5745cbf55ecf6878b7fc903e39d25723ec6048c`, and that change is included in
+  [v0.5.0](https://github.com/mbroemme/libmpq/releases/tag/v0.5.0). The
+  [relicensing record](https://github.com/mbroemme/libmpq/blob/f5745cbf55ecf6878b7fc903e39d25723ec6048c/RELICENSING.md)
+  documents contributor approvals. This does not establish LGPL coverage of our
+  older diasurgical fork commit or its additional changes, and does not change
+  the license notices in our selected source.
+- Upstream DevilutionX merged [PR #8482](https://github.com/diasurgical/DevilutionX/pull/8482),
+  replacing libmpq with MIT-licensed mpqfs. The maintainers describe this in
+  [discussion #7556](https://github.com/diasurgical/DevilutionX/discussions/7556).
+  Our fixed 1.5.5 base does not contain that replacement.
+
+The current app explicitly calls libmpq from `Source/mpq/mpq_reader.cpp`, and
+its generated device link flags include `liblibmpq.a`. Thus the old dependency
+is active, not an unused source-tree artifact. No applicable linking exception
+was found in the selected package's license and accompanying notices.
+
+An IPA is technically buildable; the blocker concerns distributing this exact
+license combination, not the IPA format or all uses of libmpq. A separately
+scoped update to the LGPL release (with downstream-delta review and LGPL
+replacement/relink delivery), or a validated mpqfs backport, provides a concrete
+potential path forward. Neither is silently included in this behavior-preserving
+migration, and neither is automatic clearance for the rest of the package.
+
 ## Remaining action
 
 Establish a documented compatible permission basis for the exact libmpq/engine
