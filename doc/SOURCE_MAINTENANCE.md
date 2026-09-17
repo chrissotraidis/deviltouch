@@ -105,3 +105,6 @@ an installed app. Private backup paths and signing evidence stay in the local
 handoff, outside public source. In-place device recovery requires the same bundle
 and signing identity and a separately backed-up complete app container; no device
 was used or modified for this task.
+
+See [the dated validation record](MODERNIZATION_VALIDATION.md) for build, archive,
+artifact identities and acceptance boundaries.
