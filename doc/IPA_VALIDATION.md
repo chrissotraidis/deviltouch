@@ -20,8 +20,24 @@ Exact commits are recorded by `sources.lock.json` and packaged provenance.
 
 ## Build and delivery checks
 
-The release requires device and Simulator builds, an audited unsigned package,
-a complete nested source restore and a modified-library rebuild. Final package
+- Native ARM64 device and iPad Simulator builds passed with Xcode 26.6 / SDK 26.5.
+- Fresh Simulator showed the Files importer. With a private retail MPQ supplied,
+  the opening video and main menu rendered; a new warrior reached Tristram,
+  saved, survived app termination and loaded the saved world after relaunch.
+- Full source archive restored without Git; manifest verified before and after
+  a complete ARM64 device build with FetchContent disconnected.
+- Deliberately modified SDL_audiolib and libsmackerdec sources rebuilt and relinked
+  into a different ARM64 executable. Distinct markers from both libraries were
+  found in the result. Personal mode does not weaken non-library verification.
+- Three source-guard tests and GitHub CI pass. All 143 baseline device resource
+  files compared match; expected changes are the executable, bundle version/
+  copyright and newly packaged notices/provenance.
+- Package audit: bundle `com.chrissotraidis.deviltouch`, short version 1.5.5,
+  build 2, minimum iOS 13.0, ARM64. Unsigned with no provisioning profile or
+  signing entitlements. No retail MPQ/save/key material; 68 component notice
+  files plus modification, license and rebuild documents.
+- Reader rollback rehearsed in a disposable exported tree: all 1,098 regular
+  baseline files matched after reversing the release fork delta. Final package
 identities are in the accompanying provenance and SHA256SUMS release assets.
 New physical AltStore installation and exhaustive gameplay are not claimed.
 The earlier physical-iPad playtest remains documented separately in PLAYTEST.md.
