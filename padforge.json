@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "id": "deviltouch",
+  "name": "DevilTouch",
+  "game": "Diablo via DevilutionX",
+  "kind": "upstream-engine",
+  "status": "draft-untested",
+  "inputs": [
+    {
+      "type": "diablo-data",
+      "formats": [
+        "mpq"
+      ],
+      "when": "in-app",
+      "description": "Your own Diablo game data (DIABDAT.MPQ), imported in the app. The build does not read it."
+    }
+  ],
+  "targets": {
+    "ios": {
+      "hosts": {
+        "macos-arm64": "experimental"
+      },
+      "output": "ipa",
+      "check": "ipa",
+      "steps": [
+        {
+          "stage": "preflight",
+          "command": [
+            "/bin/sh",
+            "{repo}/scripts/check-no-proprietary-assets.sh"
+          ]
+        },
+        {
+          "stage": "compile",
+          "command": [
+            "/bin/sh",
+            "{repo}/scripts/build-ios-device.sh"
+          ]
+        },
+        {
+          "stage": "package",
+          "command": [
+            "python3",
+            "{repo}/scripts/package-ipa.py",
+            "{repo}/build/ios-device",
+            "{output}"
+          ]
+        }
+      ]
+    }
+  },
+  "requirements": {
+    "disk_gb": 8,
+    "tools": [
+      {
+        "name": "git",
+        "version_args": [
+          "--version"
+        ]
+      },
+      {
+        "name": "cmake",
+        "version_args": [
+          "--version"
+        ]
+      },
+      {
+        "name": "ninja",
+        "version_args": [
+          "--version"
+        ]
+      },
+      {
+        "name": "python3",
+        "version_args": [
+          "--version"
+        ]
+      },
+      {
+        "name": "xcodebuild",
+        "version_args": [
+          "-version"
+        ],
+        "note": "Install Xcode and its iOS platform"
+      }
+    ]
+  },
+  "publication": {
+    "public_binaries": false,
+    "reason": "Relaunch policy for DevilutionX-based builds is source-only until the owner decides otherwise."
+  }
+}
