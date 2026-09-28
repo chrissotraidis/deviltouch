@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="#install-on-an-ipad"><img alt="iPadOS 13+" src="https://img.shields.io/badge/iPadOS-13%2B-111111?style=for-the-badge&logo=apple&logoColor=white"></a>
+  <a href="#install-on-an-ipad"><img alt="iPadOS 15+" src="https://img.shields.io/badge/iPadOS-15%2B-111111?style=for-the-badge&logo=apple&logoColor=white"></a>
   <a href="#how-it-is-built"><img alt="Native ARM64" src="https://img.shields.io/badge/Native-ARM64-8b1a1a?style=for-the-badge"></a>
   <a href="https://github.com/diasurgical/DevilutionX"><img alt="DevilutionX 1.5.5" src="https://img.shields.io/badge/DevilutionX-1.5.5-5b4636?style=for-the-badge"></a>
   <a href="#project-status"><img alt="Developer preview" src="https://img.shields.io/badge/Status-Developer_Preview-c47f17?style=for-the-badge"></a>
