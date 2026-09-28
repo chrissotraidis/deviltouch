@@ -27,8 +27,7 @@
 
 ![DevilTouch running in Tristram on iPad](doc/images/deviltouch-tristram.webp)
 
-> [!IMPORTANT]
-> **DevilTouch is a developer preview.** [Release downloads](https://github.com/chrissotraidis/deviltouch/releases) include the unsigned AltStore Classic IPA when published, plus matching source, notices and checksums. Version 1.5.5 build 2 replaces the archive reader with MIT mpqfs. Earlier builds were exercised on physical iPad; the new candidate has separate [validation evidence](doc/IPA_VALIDATION.md).
+> Previous builds have been retired; a new version is in progress.
 
 ## The original descent. A native iPad experience.
 
@@ -55,7 +54,7 @@ It keeps DevilutionX pinned and reviewable, maintains its existing iPad changes 
 
 ## Install on an iPad
 
-For AltStore Classic, download the IPA from [Releases](https://github.com/chrissotraidis/deviltouch/releases), then use **My Apps → +** in AltStore to select it. AltStore signs it for your own Apple account. Supply legally owned game MPQs through the Files importer. Keep the same signing identity when updating an existing install; do not uninstall to fix a mismatch. See [source rebuild and installation details](doc/REBUILDING.md).
+Previous builds have been retired; a new version is in progress.
 
 ### Build locally with Xcode
 
