@@ -27,7 +27,7 @@
 
 ![DevilTouch running in Tristram on iPad](doc/images/deviltouch-tristram.webp)
 
-> Previous builds have been retired; a new version is in progress.
+> **Get DevilTouch:** download the IPA from the [latest release](https://github.com/chrissotraidis/deviltouch/releases) and install it with AltStore Classic, SideStore or Sideloadly. The app contains no game data; add `DIABDAT.MPQ` from your own copy of Diablo after installing.
 
 ## The original descent. A native iPad experience.
 
@@ -54,7 +54,12 @@ It keeps DevilutionX pinned and reviewable, maintains its existing iPad changes 
 
 ## Install on an iPad
 
-Previous builds have been retired; a new version is in progress.
+Download `DevilTouch-<version>-build<N>.ipa` from the
+[latest release](https://github.com/chrissotraidis/deviltouch/releases), check
+it against the release's `SHA256SUMS`, and install it with AltStore Classic,
+SideStore or Sideloadly. On first launch, add `DIABDAT.MPQ` from your own
+legally obtained copy of Diablo (Hellfire files are optional). To build it
+yourself instead, follow the steps below.
 
 ### Build locally with Xcode
 
