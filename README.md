@@ -71,7 +71,7 @@ yourself instead, follow the steps below.
 - A paired iPad with Developer Mode enabled
 - `DIABDAT.MPQ` from a legally obtained copy of Diablo; Hellfire files are optional
 
-The pre-release baseline was verified with an Apple silicon Mac, Xcode 26.6, an iPad Pro 12.9-inch (6th generation), and iPadOS 26.5.2. The generated app targets iPadOS 13.0 or newer, but that is not yet a claim of complete testing across every compatible iPad.
+The earlier pre-release baseline was verified with an Apple silicon Mac, Xcode 26.6, an iPad Pro 12.9-inch (6th generation), and iPadOS 26.5.2. The currently published `v1.5.5-preview.1` IPA has a minimum iOS version of 13.0; current source builds default to iOS 15.0 for Xcode 27 compatibility. Neither minimum is a claim of complete testing across every compatible iPad.
 
 ### 1. Clone everything
 
@@ -266,7 +266,7 @@ and [release validation](doc/IPA_VALIDATION.md).
 - Long-session stability, suspend/resume, thermal behavior, audio, and 120 Hz verification
 - Software-keyboard behavior for every text and numeric field on physical hardware
 - Modern iPadOS scene lifecycle and windowing behavior
-- Distribution packaging; there is currently no public IPA, TestFlight build, AltStore source, or App Store listing
+- An unsigned IPA preview is public; see [Install on an iPad](#install-on-an-ipad). TestFlight, an AltStore source, and App Store distribution remain outside the verified preview route.
 - Multiplayer, which is disabled while the single-player input experience is stabilized
 
 The complete, continuously updated evidence and retest list lives in [`doc/PLAYTEST.md`](doc/PLAYTEST.md). Planned release goals and non-goals live in [`doc/PRD.md`](doc/PRD.md).

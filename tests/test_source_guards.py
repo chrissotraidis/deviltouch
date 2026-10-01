@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import shutil
 import subprocess
 import tempfile
@@ -10,6 +11,24 @@ import unittest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 class SourceGuards(unittest.TestCase):
+    def test_readme_distinguishes_current_build_floor_from_preview(self):
+        readme = (ROOT / 'README.md').read_text()
+        floors = []
+        for name in ('configure-ios-device.sh', 'configure-ios-simulator.sh'):
+            script = (ROOT / 'scripts' / name).read_text()
+            match = re.search(r'\$\{DEVILTOUCH_IOS_DEPLOYMENT_TARGET:-([0-9.]+)\}', script)
+            self.assertIsNotNone(match, name)
+            floors.append(match.group(1))
+        self.assertEqual(floors[0], floors[1])
+        self.assertIn('current source builds default to iOS ' + floors[0], readme)
+        self.assertIn('currently published `v1.5.5-preview.1` IPA has a minimum iOS version of 13.0', readme)
+
+    def test_readme_does_not_hide_the_public_unsigned_preview(self):
+        readme = (ROOT / 'README.md').read_text()
+        self.assertIn('An unsigned IPA preview is public', readme)
+        self.assertIn('[Install on an iPad](#install-on-an-ipad)', readme)
+        self.assertNotIn('there is currently no public IPA', readme)
+
     def test_dependency_patch_is_verified_idempotent_and_rejects_changes(self):
         with tempfile.TemporaryDirectory() as temp:
             root = pathlib.Path(temp)
