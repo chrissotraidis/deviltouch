@@ -1,6 +1,14 @@
 #!/bin/sh
 set -eu
 
+JOBS=${JOBS:-${CMAKE_BUILD_PARALLEL_LEVEL:-8}}
+case "$JOBS" in
+	''|*[!0-9]*|0*)
+		echo "Build job limit must be a positive whole number without leading zeros: $JOBS" >&2
+		exit 1
+		;;
+esac
+
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 BUILD_DIR=${BUILD_DIR:-"$ROOT/build/ios-device"}
 DERIVED_DATA_DIR=${DERIVED_DATA_DIR:-"$ROOT/build/ios-device-derived"}
@@ -22,7 +30,7 @@ if [ -n "${DEVELOPMENT_TEAM:-}" ]; then
 		CODE_SIGNING_ALLOWED=YES \
 		CODE_SIGNING_REQUIRED=YES \
 		-quiet \
-		-jobs "${JOBS:-8}" \
+		-jobs "$JOBS" \
 		build
 else
 	xcodebuild \
@@ -34,7 +42,7 @@ else
 		CODE_SIGNING_ALLOWED=NO \
 		CODE_SIGNING_REQUIRED=NO \
 		-quiet \
-		-jobs "${JOBS:-8}" \
+		-jobs "$JOBS" \
 		build
 fi
 
