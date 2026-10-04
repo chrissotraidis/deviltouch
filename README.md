@@ -16,6 +16,9 @@
   <a href="#how-it-is-built"><img alt="Native ARM64" src="https://img.shields.io/badge/Native-ARM64-8b1a1a?style=for-the-badge"></a>
   <a href="https://github.com/diasurgical/DevilutionX"><img alt="DevilutionX 1.5.5" src="https://img.shields.io/badge/DevilutionX-1.5.5-5b4636?style=for-the-badge"></a>
   <a href="#project-status"><img alt="Developer preview" src="https://img.shields.io/badge/Status-Developer_Preview-c47f17?style=for-the-badge"></a>
+  <a href="https://github.com/chrissotraidis/padmint"><img alt="DevilTouch setup in PadMint" src="https://img.shields.io/badge/PadMint-guided%20setup-3EB489?style=for-the-badge"></a>
+  <img alt="Game data not included" src="https://img.shields.io/badge/game%20data-not%20included-FF453A?style=for-the-badge">
+  <a href="https://discord.gg/xwHfUD2bxW"><img alt="Join the DevilTouch Discord" src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&amp;logoColor=white&amp;style=for-the-badge"></a>
 </p>
 
 <p align="center">
@@ -28,6 +31,13 @@
 ![DevilTouch running in Tristram on iPad](doc/images/deviltouch-tristram.webp)
 
 > **Get DevilTouch:** download the IPA from the [latest release](https://github.com/chrissotraidis/deviltouch/releases) and install it with AltStore Classic, SideStore or Sideloadly. The app contains no game data; add `DIABDAT.MPQ` from your own copy of Diablo after installing.
+
+> [!NOTE]
+> **AI disclosure:** DevilTouch uses substantial AI assistance for code, tests,
+> documentation, debugging and maintenance. Some support replies and maintenance
+> tasks are automated. There is no audited percentage of AI-generated code.
+> Build, test and device records describe what was checked. This disclosure
+> concerns DevilTouch's workflow, not the authorship of its upstream projects.
 
 ## The original descent. A native iPad experience.
 
@@ -346,6 +356,17 @@ Before opening a change:
 ./scripts/check-no-proprietary-assets.sh
 git diff --check
 ```
+
+## Community and support
+
+[Join the Discord](https://discord.gg/xwHfUD2bxW) for help and news. It is one
+community for DevilTouch and its sibling projects, such as KartPad, BlueWake and
+MeleePad: ask about setup and installing, share how it runs on your device, and
+hear about new releases first.
+
+Found a bug? [Open an
+issue](https://github.com/chrissotraidis/deviltouch/issues) with your device,
+its OS version, and the steps that led to it.
 
 ## License, game data, and attribution
 
