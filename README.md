@@ -193,7 +193,7 @@ DevilTouch adds no permanent action bar. The screen itself is the primary contro
 
 Text and number prompts—including hero names, chat, gold splitting, and stash withdrawal—request iPadOS text input when opened. iPadOS uses an attached hardware keyboard when available and presents its software keyboard when one is not serving the field.
 
-Prefer a traditional overlay? Enable **Settings → Controller → Touch Controls**. The optional D-pad and action buttons stay above the original HUD and hide when native side panels need the space. Duplicate potion and menu controls have been removed; Diablo's original belt and panel buttons remain directly touchable.
+Prefer a traditional overlay? Enable **Settings → Controller → Touch Controls**. The optional D-pad and action buttons stay above the original HUD and hide when native side panels need the space. Duplicate potion and menu controls have been removed; Diablo's original belt and panel buttons remain directly touchable. While you play with a connected controller the overlay hides (**Settings → Controller → Auto-hide Touch Controls with Controller**, on until you change it) and returns when you touch the screen or disconnect. Turning **Touch Controls** on turns auto-hide off, so it always brings the overlay back with the controller still connected.
 
 ## How it is built
 
