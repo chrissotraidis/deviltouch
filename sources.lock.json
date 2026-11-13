@@ -10,7 +10,7 @@
   },
   "ios_sdl": {
     "repository": "https://github.com/chrissotraidis/SDL.git",
-    "commit": "c6756fcd3de8090a8f72ac1a0b6fb6e50f0021d1",
+    "commit": "090b0c5ade61395078f9ac0756474d9e475f7fa7",
     "base": "SDL 2.32.10",
     "purpose": "iPhone/iPad builds only: UIKit scene startup, so apps built with the iOS 27 SDK open on iOS 27. Replaces DevilutionX's SDL 2.32.0 download through FETCHCONTENT_SOURCE_DIR_SDL2.",
     "license": "Zlib"
