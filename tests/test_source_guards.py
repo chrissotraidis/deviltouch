@@ -21,7 +21,7 @@ class SourceGuards(unittest.TestCase):
             floors.append(match.group(1))
         self.assertEqual(floors[0], floors[1])
         self.assertIn('current source builds default to iOS ' + floors[0], readme)
-        self.assertIn('currently published `v1.5.5-preview.1` IPA has a minimum iOS version of 13.0', readme)
+        self.assertIn('`v1.5.5-preview.1` IPA has a minimum iOS version of 13.0', readme)
 
     def test_readme_does_not_hide_the_public_unsigned_preview(self):
         readme = (ROOT / 'README.md').read_text()

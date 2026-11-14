@@ -81,7 +81,7 @@ yourself instead, follow the steps below.
 - A paired iPad with Developer Mode enabled
 - `DIABDAT.MPQ` from a legally obtained copy of Diablo; Hellfire files are optional
 
-The earlier pre-release baseline was verified with an Apple silicon Mac, Xcode 26.6, an iPad Pro 12.9-inch (6th generation), and iPadOS 26.5.2. The currently published `v1.5.5-preview.1` IPA has a minimum iOS version of 13.0; current source builds default to iOS 15.0 for Xcode 27 compatibility. Neither minimum is a claim of complete testing across every compatible iPad.
+The earlier pre-release baseline was verified with an Apple silicon Mac, Xcode 26.6, an iPad Pro 12.9-inch (6th generation), and iPadOS 26.5.2. The `v1.5.5-preview.1` IPA has a minimum iOS version of 13.0; `v1.5.5-preview.2` (build 3) and current source builds default to iOS 15.0 for Xcode 27 compatibility. Neither minimum is a claim of complete testing across every compatible iPad.
 
 ### 1. Clone everything
 
