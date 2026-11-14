@@ -32,6 +32,9 @@ esac
 set --
 if [ -f "$ROOT/dependencies.cmake" ]; then
 	set -- -C "$ROOT/dependencies.cmake"
+else
+	# A restored source archive carries its SDL in dependencies.cmake.
+	set -- -DFETCHCONTENT_SOURCE_DIR_SDL2="$("$ROOT/scripts/fetch-scene-sdl.sh")"
 fi
 
 cmake "$@" \
@@ -41,7 +44,6 @@ cmake "$@" \
 	-DCMAKE_TOOLCHAIN_FILE="$UPSTREAM/CMake/platforms/ios.toolchain.cmake" \
 	-DPLATFORM="$platform" \
 	-DDEPLOYMENT_TARGET="${DEVILTOUCH_IOS_DEPLOYMENT_TARGET:-15.0}" \
-	-DFETCHCONTENT_SOURCE_DIR_SDL2="$("$ROOT/scripts/fetch-scene-sdl.sh")" \
 	-DDEVILTOUCH_IOS_ASSET_CATALOG="$ROOT/platform/ios/Assets.xcassets" \
 	-DDEVILTOUCH_APP_VERSION=1.5.5 \
 	-DDEVILTOUCH_BUILD_NUMBER=3 \
