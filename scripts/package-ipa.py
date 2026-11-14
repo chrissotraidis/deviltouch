@@ -35,7 +35,12 @@ with tempfile.TemporaryDirectory() as temp:
     for name in ['LICENSE.md','NOTICE.md','doc/RELEASE_RIGHTS.md','doc/REBUILDING.md']:
         shutil.copy2(root/name, notices/pathlib.Path(name).name)
     inputs = [('engine',root/'upstream/DevilutionX')]
-    inputs += [(x.name[:-4],x) for x in sorted((a.build_dir/'_deps').glob('*-src'))]
+    deps = {x.name[:-4]: x for x in (a.build_dir/'_deps').glob('*-src')}
+    # iOS builds take SDL from the pinned scene SDL checkout; CMake records which one.
+    for line in (a.build_dir/'CMakeCache.txt').read_text().splitlines():
+        if line.startswith('FETCHCONTENT_SOURCE_DIR_SDL2:') and line.split('=',1)[1]:
+            deps['sdl2'] = pathlib.Path(line.split('=',1)[1])
+    inputs += sorted(deps.items())
     for component, source in inputs:
         for file in source.rglob('*'):
             if not file.is_file() or '.git' in file.parts: continue

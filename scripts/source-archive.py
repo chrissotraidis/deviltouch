@@ -23,9 +23,16 @@ if git(root, 'status', '--porcelain', '--untracked-files=all').strip():
     raise SystemExit('Commit intended app changes before exporting source')
 if args.output.exists():
     raise SystemExit('Refusing to overwrite an existing artifact')
-sources = sorted((args.build_dir / '_deps').glob('*-src'))
+sources = {p.name[:-4]: p for p in (args.build_dir / '_deps').glob('*-src')}
+# iOS builds take SDL from the pinned scene SDL checkout; CMake records which one.
+for line in (args.build_dir / 'CMakeCache.txt').read_text().splitlines():
+    if line.startswith('FETCHCONTENT_SOURCE_DIR_SDL2:') and line.split('=', 1)[1]:
+        sdl = pathlib.Path(line.split('=', 1)[1])
+        if git(sdl, 'rev-parse', 'HEAD').decode().strip() != json.loads((root/'sources.lock.json').read_text())['ios_sdl']['commit']:
+            raise SystemExit('Configured SDL is not the pinned iOS SDL')
+        sources['sdl2'] = sdl
 required = {'asio','libfmt','mpqfs','libpng','libsmackerdec','libsodium','sdl2','sdl_audiolib','sdl_image','simpleini'}
-if {p.name[:-4] for p in sources} != required:
+if set(sources) != required:
     raise SystemExit('Configured dependency set differs from the qualified Apple source graph')
 with tempfile.TemporaryDirectory() as temp:
     stage = pathlib.Path(temp) / 'deviltouch-source'
@@ -39,8 +46,7 @@ with tempfile.TemporaryDirectory() as temp:
                     raise SystemExit('Unsafe Git archive member')
             archive.extractall(destination)
     cache = ['# Exact local sources; no FetchContent download is needed.']
-    for source in sources:
-        name = source.name[:-4]
+    for name, source in sorted(sources.items()):
         shutil.copytree(source, stage / 'dependencies' / name, symlinks=True,
                         ignore=shutil.ignore_patterns('.git', '.DS_Store'))
         cache.append('set(FETCHCONTENT_SOURCE_DIR_' + name.upper() + ' "${CMAKE_CURRENT_LIST_DIR}/dependencies/' + name + '" CACHE PATH "" FORCE)')
