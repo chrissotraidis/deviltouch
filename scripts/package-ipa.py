@@ -17,7 +17,7 @@ commit = subprocess.check_output(['git','-C',str(root),'rev-parse','HEAD'],text=
 if stamp.get('dirty') or stamp['app_commit'] != commit or stamp['executable_sha256'] != hashlib.sha256((app/'devilutionx').read_bytes()).hexdigest():
     raise SystemExit('Rebuild from the current clean commit before packaging')
 info = plistlib.loads((app/'Info.plist').read_bytes())
-if (info['CFBundleShortVersionString'], info['CFBundleVersion']) != ('1.5.5','2'):
+if (info['CFBundleShortVersionString'], info['CFBundleVersion']) != ('1.5.5','3'):
     raise SystemExit('Unexpected release version')
 if 'arm64' not in subprocess.check_output(['lipo','-archs',str(app/'devilutionx')],text=True):
     raise SystemExit('Expected ARM64 device binary')
