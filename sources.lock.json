@@ -4,7 +4,7 @@
     "repository": "https://github.com/chrissotraidis/DevilutionX.git",
     "upstream": "https://github.com/diasurgical/DevilutionX.git",
     "base": "7223eeac9e8274fbf665b4de86fda26d3b22c52f",
-    "commit": "a3d1c74c1103ee407f964ef8a4cfc31f562519a0",
+    "commit": "fab2f59fc371a90bc33b8d1f025f6a90c4a980f5",
     "branch": "deviltouch/ios-mpqfs-release",
     "license": "Sustainable Use License 1.0"
   },
